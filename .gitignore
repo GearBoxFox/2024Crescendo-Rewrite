@@ -332,4 +332,5 @@ bin/
 # End entries from WPI Lib team
 
 ./.idea
+.run
 

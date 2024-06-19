@@ -5,6 +5,10 @@ plugins {
     id "idea"
 }
 
+repositories {
+    maven { url 'https://jitpack.io' }
+}
+
 def javaVersion = JavaVersion.VERSION_17
 
 java {
@@ -73,6 +77,9 @@ dependencies {
     testImplementation "org.junit.jupiter:junit-jupiter-api"
     testImplementation "org.junit.jupiter:junit-jupiter-params"
     testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine"
+
+    // Monologue logging library
+    implementation 'com.github.shueja:Monologue:v1.0.0-beta6'
 }
 
 test{
