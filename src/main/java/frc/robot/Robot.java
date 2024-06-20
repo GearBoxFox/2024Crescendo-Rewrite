@@ -5,10 +5,12 @@
 
 package frc.robot;
 
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import monologue.Logged;
+import monologue.Monologue;
 
 public class Robot extends TimedRobot implements Logged {
     private Command autonomousCommand;
@@ -17,12 +19,19 @@ public class Robot extends TimedRobot implements Logged {
     
     
     @Override
-    public void robotInit() {}
+    public void robotInit() {
+        boolean lazyLogging = false;
+        boolean fileOnly = false;
+        Monologue.setupMonologue(this, "Robot", fileOnly, lazyLogging);
+    }
     
     
     @Override
     public void robotPeriodic() {
         CommandScheduler.getInstance().run();
+
+        Monologue.setFileOnly(DriverStation.isFMSAttached());
+        Monologue.updateAll();
     }
     
     
