@@ -331,28 +331,9 @@ bin/
 
 # End entries from WPI Lib team
 
-./.idea
+./.idea/*
 .run
 
-/logs/FRC_20240625_133545.wpilog
 /networktables.json
-/.idea/inspectionProfiles/Project_Default.xml
-/ctre_sim/CANCoder vers. H - 03 - 0 - ext.dat
-/ctre_sim/CANCoder vers. H - 06 - 0 - ext.dat
-/ctre_sim/CANCoder vers. H - 09 - 0 - ext.dat
-/ctre_sim/CANCoder vers. H - 012 - 0 - ext.dat
-/logs/FRC_20240625_133718.wpilog
-/logs/FRC_20240625_133937.wpilog
-/logs/FRC_20240625_133949.wpilog
-/logs/FRC_20240625_134029.wpilog
-/logs/FRC_20240625_134102.wpilog
-/logs/FRC_20240625_143816.wpilog
-/ctre_sim/Pigeon 2 - 013 - 0 - ext.dat
-/ctre_sim/Talon FX vers. C - 01 - 0 - ext.dat
-/ctre_sim/Talon FX vers. C - 02 - 0 - ext.dat
-/ctre_sim/Talon FX vers. C - 04 - 0 - ext.dat
-/ctre_sim/Talon FX vers. C - 05 - 0 - ext.dat
-/ctre_sim/Talon FX vers. C - 07 - 0 - ext.dat
-/ctre_sim/Talon FX vers. C - 08 - 0 - ext.dat
-/ctre_sim/Talon FX vers. C - 010 - 0 - ext.dat
-/ctre_sim/Talon FX vers. C - 011 - 0 - ext.dat
+/ctre_sim/*
+/logs/*
