@@ -72,6 +72,7 @@ public class Constants {
   public static class ShooterConstants {
     public static final GosDoubleProperty ACCEL_COMP_FACTOR =
         new GosDoubleProperty(false, "Shooter/Acceleration Compensation", 0.100);
+    public static final int TOF_ID = 28;
 
     private ShooterConstants() {
       throw new IllegalStateException("Static classes should not be constructed");

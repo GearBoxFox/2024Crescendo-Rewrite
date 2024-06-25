@@ -6,9 +6,19 @@ import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
+import com.ctre.phoenix6.sim.TalonFXSimState;
+import com.playingwithfusion.TimeOfFlight;
+import edu.wpi.first.math.system.plant.DCMotor;
+import edu.wpi.first.math.util.Units;
+import edu.wpi.first.wpilibj.RobotController;
+import edu.wpi.first.wpilibj.Timer;
+import edu.wpi.first.wpilibj.simulation.FlywheelSim;
+import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 import frc.robot.Constants.ShooterConstants;
+import frc.robot.Robot;
+import frc.robot.RobotContainer;
 import lib.properties.phoenix6.Phoenix6PidPropertyBuilder;
 import lib.properties.phoenix6.PidPropertyPublic;
 import monologue.Logged;
@@ -21,8 +31,15 @@ public class ShooterSubsystem extends SubsystemBase implements Logged {
   private final TalonFX m_intake;
   private final TalonFX m_indexer;
 
+  private final TimeOfFlight m_noteSensor;
+
   private final PidPropertyPublic m_leftPid;
   private final PidPropertyPublic m_rightPid;
+
+  private FlywheelSim m_leftSim;
+  private FlywheelSim m_rightSim;
+  private TalonFXSimState m_leftSimState;
+  private TalonFXSimState m_rightSimState;
 
   public ShooterSubsystem() {
     // Initialize and setup motors
@@ -34,6 +51,9 @@ public class ShooterSubsystem extends SubsystemBase implements Logged {
     m_kicker = new TalonFX(ShooterConstants.KICKER_ID, Constants.CANBUS_NAME);
     m_intake = new TalonFX(ShooterConstants.INTAKE_ID, Constants.CANBUS_NAME);
     m_indexer = new TalonFX(ShooterConstants.INDEXER_ID, Constants.CANBUS_NAME);
+
+    m_noteSensor = new TimeOfFlight(ShooterConstants.TOF_ID);
+    m_noteSensor.setRangingMode(TimeOfFlight.RangingMode.Short, 25);
 
     configMotors();
 
@@ -57,6 +77,86 @@ public class ShooterSubsystem extends SubsystemBase implements Logged {
         .addKS(ShooterConstants.SHOOTER_KS)
         .addKV(ShooterConstants.SHOOTER_KV)
         .build();
+
+    // setup flywheel sim
+    if (Robot.isSimulation()) {
+      // CTRE Sim states
+      m_leftSimState = m_leftShooter.getSimState();
+      m_rightSimState = m_rightShooter.getSimState();
+
+      m_leftSim.setInputVoltage(RobotController.getBatteryVoltage());
+      m_rightSim.setInputVoltage(RobotController.getBatteryVoltage());
+
+      // simple sim controllers
+      m_leftSim = new FlywheelSim(DCMotor.getFalcon500(1),
+          1.0, 0.00001);
+      m_rightSim = new FlywheelSim(DCMotor.getFalcon500(1),
+          1.0, 0.00001);
+    }
+  }
+
+  public Command intakeCommand(double intakePower, double kickerPower, double timeout) {
+    Timer timer = new Timer();
+    return runEnd(() -> {
+          if (!hasGamePiece()) {
+            // if no game piece, intake normally
+            m_leftShooter.set(-0.1);
+            m_rightShooter.set(-0.1);
+            m_intake.set(intakePower);
+            m_kicker.set(kickerPower);
+            timer.restart();
+          } else if (!timer.hasElapsed(timeout)) {
+            // when we have a game piece, run backwards for so long
+            m_kicker.set(-0.15);
+            m_intake.set(0.0);
+          } else {
+            // stop when finished
+            m_leftShooter.set(0.0);
+            m_rightShooter.set(0.0);
+            m_kicker.set(0.0);
+            m_intake.set(0.0);
+          }
+        },
+        () -> {
+          // stop when finished
+          m_intake.set(0.0);
+          m_kicker.set(0.0);
+          m_leftShooter.set(0.0);
+          m_rightShooter.set(0.0);
+        });
+  }
+
+  public boolean hasGamePiece() {
+    return m_noteSensor.getRange() < 60.0;
+  }
+
+  @Override
+  public void periodic() {
+    // Update PID Controller
+    m_leftPid.updateIfChanged();
+    m_rightPid.updateIfChanged();
+
+    // Log new values
+    log("Left Shooter RPM", m_leftShooter.getVelocity().getValueAsDouble() / 60.0);
+    log("Right Shooter RPM", m_rightShooter.getVelocity().getValueAsDouble() / 60.0);
+
+    log("Has game piece", hasGamePiece());
+  }
+
+  @Override
+  public void simulationPeriodic() {
+    // set input voltage from motors
+    m_leftSim.setInputVoltage(m_leftSimState.getMotorVoltage());
+    m_rightSim.setInputVoltage(m_rightSimState.getMotorVoltage());
+
+    m_leftSim.update(0.020); // assume 20ms sim loop time
+    m_rightSim.update(0.020);
+
+    // update motor velocity and position from sim
+    m_leftSimState.setRotorVelocity(
+        Units.radiansToRotations(m_leftSim.getAngularVelocityRadPerSec()));
+    m_rightSimState.setRotorVelocity(
+        Units.radiansToRotations(m_rightSim.getAngularVelocityRadPerSec()));
   }
 
   public void configMotors() {
