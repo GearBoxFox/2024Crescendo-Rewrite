@@ -1,5 +1,6 @@
 package frc.robot;
 
+import com.gos.lib.properties.GosDoubleProperty;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation2d;
@@ -66,5 +67,34 @@ public class Constants {
 
     public static final double ARM_LENGTH_METERS = Units.inchesToMeters(22.01);
     public static final double WRIST_LENGTH_METERS = Units.inchesToMeters(14.5);
+  }
+
+  public static class ShooterConstants {
+    public static final GosDoubleProperty ACCEL_COMP_FACTOR =
+        new GosDoubleProperty(false, "Shooter/Acceleration Compensation", 0.100);
+
+    private ShooterConstants() {
+      throw new IllegalStateException("Static classes should not be constructed");
+    }
+
+
+    public static final int LEFT_ID = 25;
+    public static final int RIGHT_ID = 26;
+    public static final int KICKER_ID = 24;
+    public static final int INTAKE_ID = 14;
+    public static final int INDEXER_ID = 15;
+
+    public static final double SHOOTER_KP = 0.010;
+    public static final double SHOOTER_KI = 0.0;
+    public static final double SHOOTER_KD = 0.00675;
+    public static final double SHOOTER_KF = 0.000172;
+    public static final double SHOOTER_KS = 0.21963;
+    public static final double SHOOTER_KV = 0.174541;
+
+    public static final boolean TOP_LEFT_INVERTED = false;
+    public static final boolean TOP_RIGHT_INVERTED = true;
+    public static final boolean BOTTOM_LEFT_INVERTED = true;
+    public static final boolean BOTTOM_RIGHT_INVERTED = false;
+    public static final boolean KICKER_INVERTED = true;
   }
 }
