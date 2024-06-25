@@ -3,6 +3,8 @@ package frc.robot.subsystems;
 
 import com.ctre.phoenix6.configs.MotorOutputConfigs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
+import com.ctre.phoenix6.controls.NeutralOut;
+import com.ctre.phoenix6.controls.VelocityVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
@@ -10,6 +12,7 @@ import com.ctre.phoenix6.sim.TalonFXSimState;
 import com.playingwithfusion.TimeOfFlight;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.simulation.FlywheelSim;
@@ -21,6 +24,7 @@ import frc.robot.Robot;
 import frc.robot.RobotContainer;
 import lib.properties.phoenix6.Phoenix6PidPropertyBuilder;
 import lib.properties.phoenix6.PidPropertyPublic;
+import monologue.Annotations;
 import monologue.Logged;
 
 public class ShooterSubsystem extends SubsystemBase implements Logged {
@@ -40,6 +44,11 @@ public class ShooterSubsystem extends SubsystemBase implements Logged {
   private FlywheelSim m_rightSim;
   private TalonFXSimState m_leftSimState;
   private TalonFXSimState m_rightSimState;
+
+  @Annotations.Log
+  private double leftRPMSetpoint = 0.0;
+  @Annotations.Log
+  private double rightRPMSetpoint = 0.0;
 
   public ShooterSubsystem() {
     // Initialize and setup motors
@@ -79,13 +88,13 @@ public class ShooterSubsystem extends SubsystemBase implements Logged {
         .build();
 
     // setup flywheel sim
-    if (Robot.isSimulation()) {
+    if (RobotBase.isSimulation()) {
       // CTRE Sim states
       m_leftSimState = m_leftShooter.getSimState();
       m_rightSimState = m_rightShooter.getSimState();
 
-      m_leftSim.setInputVoltage(RobotController.getBatteryVoltage());
-      m_rightSim.setInputVoltage(RobotController.getBatteryVoltage());
+      m_leftSimState.setSupplyVoltage(RobotController.getBatteryVoltage());
+      m_rightSimState.setSupplyVoltage(RobotController.getBatteryVoltage());
 
       // simple sim controllers
       m_leftSim = new FlywheelSim(DCMotor.getFalcon500(1),
@@ -93,6 +102,21 @@ public class ShooterSubsystem extends SubsystemBase implements Logged {
       m_rightSim = new FlywheelSim(DCMotor.getFalcon500(1),
           1.0, 0.00001);
     }
+  }
+
+  public Command setShooterVelocities(double leftRPM, double rightRPM) {
+    leftRPMSetpoint = leftRPM;
+    rightRPMSetpoint = rightRPM;
+    return runEnd(() -> {
+          var control = new VelocityVoltage(0.0)
+              .withSlot(0);
+          m_leftShooter.setControl(control.withVelocity(leftRPM * 60.0));
+          m_rightShooter.setControl(control.withVelocity(rightRPM * 60.0));
+        },
+        () -> {
+          m_leftShooter.setControl(new NeutralOut());
+          m_rightShooter.setControl(new NeutralOut());
+        });
   }
 
   public Command intakeCommand(double intakePower, double kickerPower, double timeout) {

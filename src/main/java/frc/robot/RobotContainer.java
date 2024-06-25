@@ -58,7 +58,7 @@ public class RobotContainer implements Logged {
             .withVelocityY(-m_driveController.getLeftX() * m_maxSpeed)));
 
         m_driveController.b().whileTrue(
-            m_shooter.intakeCommand(0.75, 0.5, 0.13)
+            m_shooter.setShooterVelocities(3500, 3500)
         );
     }
     

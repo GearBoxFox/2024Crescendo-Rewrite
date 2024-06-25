@@ -25,8 +25,8 @@ public class ArmSubsystem extends SubsystemBase implements Logged {
   private final CANcoder m_wristEncoder;
 
   // Motor outputs
-  private final PositionVoltage m_armPID;
-  private final Phoenix6PidPropertyBuilder m_armProperty;
+//  private final PositionVoltage m_armPID;
+//  private final Phoenix6PidPropertyBuilder m_armProperty;
 
   public ArmSubsystem() {
     m_armMaster = new TalonFX(ArmConstants.ARM_MASTER_ID, Constants.CANBUS_NAME);
