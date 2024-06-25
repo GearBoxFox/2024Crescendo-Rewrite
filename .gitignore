@@ -331,6 +331,9 @@ bin/
 
 # End entries from WPI Lib team
 
-./.idea
+./.idea/*
 .run
 
+/networktables.json
+/ctre_sim/*
+/logs/*
