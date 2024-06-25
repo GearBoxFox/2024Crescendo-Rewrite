@@ -28,6 +28,7 @@ public class RobotContainer implements Logged {
     // requests for swerve drive
     private final SwerveRequest.FieldCentric m_driveRequest = new SwerveRequest.FieldCentric()
         .withDeadband(m_maxSpeed * 0.1).withRotationalDeadband(m_maxAngularRate * 0.1)
+        .withSteerRequestType(SwerveModule.SteerRequestType.MotionMagicExpo)
         .withDriveRequestType(SwerveModule.DriveRequestType.OpenLoopVoltage);
 
     public RobotContainer() {
@@ -42,8 +43,9 @@ public class RobotContainer implements Logged {
                 .withVelocityX(-m_driveController.getLeftY() * m_maxSpeed)
                 .withVelocityY(-m_driveController.getLeftX() * m_maxSpeed)
                 .withRotationalRate(-m_driveController.getRightX() * m_maxAngularRate)
-            )
-        );
+            ).ignoringDisable(true));
+
+        m_driveController.a().whileTrue(m_drive.applyRequest(SwerveRequest.SwerveDriveBrake::new));
     }
     
     
