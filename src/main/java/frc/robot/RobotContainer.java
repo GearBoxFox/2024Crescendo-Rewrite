@@ -45,8 +45,7 @@ public class RobotContainer implements Logged {
     private void configureBindings() {
         // Robot default drive
         m_drive.setDefaultCommand(
-            m_drive.applyRequest(() -> m_driveRequest
-                .withVelocityX(-m_driveController.getLeftY() * m_maxSpeed)
+            m_drive.applyRequest(() -> m_driveRequest.withVelocityX(-m_driveController.getLeftY() * m_maxSpeed)
                 .withVelocityY(-m_driveController.getLeftX() * m_maxSpeed)
                 .withRotationalRate(-m_driveController.getRightX() * m_maxAngularRate)
             ).ignoringDisable(true));
