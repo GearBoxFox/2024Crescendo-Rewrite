@@ -93,29 +93,28 @@ public class ShooterSubsystem extends SubsystemBase implements Logged {
       m_leftSimState = m_leftShooter.getSimState();
       m_rightSimState = m_rightShooter.getSimState();
 
-      m_leftSimState.setSupplyVoltage(RobotController.getBatteryVoltage());
-      m_rightSimState.setSupplyVoltage(RobotController.getBatteryVoltage());
-
       // simple sim controllers
       m_leftSim = new FlywheelSim(DCMotor.getFalcon500(1),
-          1.0, 0.00001);
+          1.0, 0.001);
       m_rightSim = new FlywheelSim(DCMotor.getFalcon500(1),
-          1.0, 0.00001);
+          1.0, 0.001);
     }
   }
 
   public Command setShooterVelocities(double leftRPM, double rightRPM) {
-    leftRPMSetpoint = leftRPM;
-    rightRPMSetpoint = rightRPM;
     return runEnd(() -> {
+          leftRPMSetpoint = leftRPM;
+          rightRPMSetpoint = rightRPM;
           var control = new VelocityVoltage(0.0)
               .withSlot(0);
-          m_leftShooter.setControl(control.withVelocity(leftRPM * 60.0));
-          m_rightShooter.setControl(control.withVelocity(rightRPM * 60.0));
+          m_leftShooter.setControl(control.withVelocity(leftRPM / 60.0));
+          m_rightShooter.setControl(control.withVelocity(rightRPM / 60.0));
         },
         () -> {
-          m_leftShooter.setControl(new NeutralOut());
-          m_rightShooter.setControl(new NeutralOut());
+          leftRPMSetpoint = 0.0;
+          rightRPMSetpoint = 0.0;
+          m_leftShooter.set(0.0);
+          m_rightShooter.set(0.0);
         });
   }
 
@@ -161,8 +160,8 @@ public class ShooterSubsystem extends SubsystemBase implements Logged {
     m_rightPid.updateIfChanged();
 
     // Log new values
-    log("Left Shooter RPM", m_leftShooter.getVelocity().getValueAsDouble() / 60.0);
-    log("Right Shooter RPM", m_rightShooter.getVelocity().getValueAsDouble() / 60.0);
+    log("Left Shooter RPM", m_leftShooter.getVelocity().getValueAsDouble() * 60.0);
+    log("Right Shooter RPM", m_rightShooter.getVelocity().getValueAsDouble() * 60.0);
 
     log("Has game piece", hasGamePiece());
   }
@@ -170,6 +169,9 @@ public class ShooterSubsystem extends SubsystemBase implements Logged {
   @Override
   public void simulationPeriodic() {
     // set input voltage from motors
+    m_leftSimState.setSupplyVoltage(RobotController.getBatteryVoltage());
+    m_rightSimState.setSupplyVoltage(RobotController.getBatteryVoltage());
+
     m_leftSim.setInputVoltage(m_leftSimState.getMotorVoltage());
     m_rightSim.setInputVoltage(m_rightSimState.getMotorVoltage());
 
