@@ -26,12 +26,13 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Subsystem;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.generated.TunerConstants;
+import monologue.Logged;
 
 /**
  * Class that extends the Phoenix SwerveDrivetrain class and implements
  * subsystem so it can be used in command-based projects easily.
  */
-public class SwerveDriveSubsystem extends SwerveDrivetrain implements Subsystem {
+public class CommanSwerveDrive extends SwerveDrivetrain implements Subsystem, Logged {
   private static final double SIM_LOOP_PERIOD = 0.005; // 5 ms
   private Notifier m_simNotifier = null;
   private double m_lastSimTime;
@@ -50,7 +51,7 @@ public class SwerveDriveSubsystem extends SwerveDrivetrain implements Subsystem 
   private final SwerveRequest.SysIdSwerveSteerGains SteerCharacterization = new SwerveRequest.SysIdSwerveSteerGains();
 
   /* Use one of these sysidroutines for your particular test */
-  private SysIdRoutine SysIdRoutineTranslation = new SysIdRoutine(
+  private final SysIdRoutine m_sysIdRoutineTranslation = new SysIdRoutine(
       new SysIdRoutine.Config(
           null,
           Volts.of(4),
@@ -61,7 +62,7 @@ public class SwerveDriveSubsystem extends SwerveDrivetrain implements Subsystem 
           null,
           this));
 
-  private final SysIdRoutine SysIdRoutineRotation = new SysIdRoutine(
+  private final SysIdRoutine m_sysIdRoutineRotation = new SysIdRoutine(
       new SysIdRoutine.Config(
           null,
           Volts.of(4),
@@ -71,7 +72,7 @@ public class SwerveDriveSubsystem extends SwerveDrivetrain implements Subsystem 
           (volts) -> setControl(RotationCharacterization.withVolts(volts)),
           null,
           this));
-  private final SysIdRoutine SysIdRoutineSteer = new SysIdRoutine(
+  private final SysIdRoutine m_sysIdRoutineSteer = new SysIdRoutine(
       new SysIdRoutine.Config(
           null,
           Volts.of(7),
@@ -83,17 +84,17 @@ public class SwerveDriveSubsystem extends SwerveDrivetrain implements Subsystem 
           this));
 
   /* Change this to the sysid routine you want to test */
-  private final SysIdRoutine RoutineToApply = SysIdRoutineTranslation;
+  private final SysIdRoutine m_routineToApply = m_sysIdRoutineTranslation;
 
-  public SwerveDriveSubsystem(SwerveDrivetrainConstants driveTrainConstants, double OdometryUpdateFrequency, SwerveModuleConstants... modules) {
-    super(driveTrainConstants, OdometryUpdateFrequency, modules);
+  public CommanSwerveDrive(SwerveDrivetrainConstants driveTrainConstants, double odometryUpdateFrequency, SwerveModuleConstants... modules) {
+    super(driveTrainConstants, odometryUpdateFrequency, modules);
     configurePathPlanner();
     if (Utils.isSimulation()) {
       startSimThread();
     }
   }
 
-  public SwerveDriveSubsystem(SwerveDrivetrainConstants driveTrainConstants, SwerveModuleConstants... modules) {
+  public CommanSwerveDrive(SwerveDrivetrainConstants driveTrainConstants, SwerveModuleConstants... modules) {
     super(driveTrainConstants, modules);
     configurePathPlanner();
     if (Utils.isSimulation()) {
@@ -134,11 +135,11 @@ public class SwerveDriveSubsystem extends SwerveDrivetrain implements Subsystem 
    * which one you're trying to characterize
    */
   public Command sysIdQuasistatic(SysIdRoutine.Direction direction) {
-    return RoutineToApply.quasistatic(direction);
+    return m_routineToApply.quasistatic(direction);
   }
 
   public Command sysIdDynamic(SysIdRoutine.Direction direction) {
-    return RoutineToApply.dynamic(direction);
+    return m_routineToApply.dynamic(direction);
   }
 
   public ChassisSpeeds getCurrentRobotChassisSpeeds() {
@@ -158,6 +159,16 @@ public class SwerveDriveSubsystem extends SwerveDrivetrain implements Subsystem 
       updateSimState(deltaTime, RobotController.getBatteryVoltage());
     });
     m_simNotifier.startPeriodic(SIM_LOOP_PERIOD);
+  }
+
+  public void logState() {
+    SwerveDrivetrain.SwerveDriveState state = getState();
+
+    log("Robot Pose", state.Pose);
+    log("Robot Speed", state.speeds);
+
+    log("Module States", state.ModuleStates);
+    log("Module Setpoints", state.ModuleTargets);
   }
 
   @Override
