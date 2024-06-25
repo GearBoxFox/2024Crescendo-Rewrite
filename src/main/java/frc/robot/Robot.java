@@ -20,6 +20,8 @@ public class Robot extends TimedRobot implements Logged {
     
     @Override
     public void robotInit() {
+        robotContainer = new RobotContainer();
+
         boolean lazyLogging = false;
         boolean fileOnly = false;
         Monologue.setupMonologue(this, "Robot", fileOnly, lazyLogging);

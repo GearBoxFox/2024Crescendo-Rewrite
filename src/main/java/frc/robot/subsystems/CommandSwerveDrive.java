@@ -32,7 +32,7 @@ import monologue.Logged;
  * Class that extends the Phoenix SwerveDrivetrain class and implements
  * subsystem so it can be used in command-based projects easily.
  */
-public class CommanSwerveDrive extends SwerveDrivetrain implements Subsystem, Logged {
+public class CommandSwerveDrive extends SwerveDrivetrain implements Subsystem, Logged {
   private static final double SIM_LOOP_PERIOD = 0.005; // 5 ms
   private Notifier m_simNotifier = null;
   private double m_lastSimTime;
@@ -86,20 +86,24 @@ public class CommanSwerveDrive extends SwerveDrivetrain implements Subsystem, Lo
   /* Change this to the sysid routine you want to test */
   private final SysIdRoutine m_routineToApply = m_sysIdRoutineTranslation;
 
-  public CommanSwerveDrive(SwerveDrivetrainConstants driveTrainConstants, double odometryUpdateFrequency, SwerveModuleConstants... modules) {
+  public CommandSwerveDrive(SwerveDrivetrainConstants driveTrainConstants, double odometryUpdateFrequency, SwerveModuleConstants... modules) {
     super(driveTrainConstants, odometryUpdateFrequency, modules);
     configurePathPlanner();
     if (Utils.isSimulation()) {
       startSimThread();
     }
+
+    this.registerTelemetry(this::logState);
   }
 
-  public CommanSwerveDrive(SwerveDrivetrainConstants driveTrainConstants, SwerveModuleConstants... modules) {
+  public CommandSwerveDrive(SwerveDrivetrainConstants driveTrainConstants, SwerveModuleConstants... modules) {
     super(driveTrainConstants, modules);
     configurePathPlanner();
     if (Utils.isSimulation()) {
       startSimThread();
     }
+
+    this.registerTelemetry(this::logState);
   }
 
   private void configurePathPlanner() {
@@ -161,9 +165,7 @@ public class CommanSwerveDrive extends SwerveDrivetrain implements Subsystem, Lo
     m_simNotifier.startPeriodic(SIM_LOOP_PERIOD);
   }
 
-  public void logState() {
-    SwerveDrivetrain.SwerveDriveState state = getState();
-
+  public void logState(SwerveDriveState state) {
     log("Robot Pose", state.Pose);
     log("Robot Speed", state.speeds);
 

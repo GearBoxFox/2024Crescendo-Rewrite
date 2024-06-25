@@ -11,15 +11,16 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.generated.TunerConstants;
-import frc.robot.subsystems.CommanSwerveDrive;
+import frc.robot.subsystems.CommandSwerveDrive;
+import monologue.Logged;
 
 
-public class RobotContainer {
+public class RobotContainer implements Logged {
     private double m_maxSpeed = TunerConstants.kSpeedAt12VoltsMps; // kSpeedAt12VoltsMps desired top speed
     private double m_maxAngularRate = 1.5 * Math.PI; // 3/4 of a rotation per second max angular velocity
 
     // subsystems
-    private final CommanSwerveDrive m_drive = TunerConstants.DriveTrain;
+    private final CommandSwerveDrive m_drive = TunerConstants.DriveTrain;
 
     // driver controllers
     private final CommandXboxController m_driveController = new CommandXboxController(0);

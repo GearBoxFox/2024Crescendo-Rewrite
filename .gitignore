@@ -334,3 +334,6 @@ bin/
 ./.idea
 .run
 
+/logs/FRC_20240625_133545.wpilog
+/networktables.json
+/.idea/inspectionProfiles/Project_Default.xml
