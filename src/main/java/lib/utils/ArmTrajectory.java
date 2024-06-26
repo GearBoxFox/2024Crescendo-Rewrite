@@ -107,7 +107,7 @@ public class ArmTrajectory {
 
     // create an array of timestamps to sample from
     ArrayList<Double> tList = new ArrayList<>();
-    double averageDelta = t_f - t_0 / 100.0;
+    double averageDelta = (t_f - t_0) / 100.0;
     double x = 0;
     for (int i = 0; i < 100; i++) {
       tList.add(x + t_0);
@@ -115,8 +115,7 @@ public class ArmTrajectory {
     }
     tList.add(t_f);
 
-    double[] time = tList.stream().mapToDouble(Double::valueOf).map((double value) -> Math.pow(value, 0)).toArray();
-    SimpleMatrix tVec = new SimpleMatrix(time).transpose();
+    double[] time = tList.stream().mapToDouble(Double::valueOf).toArray();
 
     double[] tPow0 = tList.stream().mapToDouble(Double::valueOf).map((double value) -> Math.pow(value, 0)).toArray();
     double[] tPow1 = tList.stream().mapToDouble(Double::valueOf).map((double value) -> Math.pow(value, 1)).toArray();
@@ -144,7 +143,22 @@ public class ArmTrajectory {
 
     SimpleMatrix velVec = velTVec.mult(coeffs);
 
-    return new ArmTrajectory(null, null);
+    ArmTrajectoryState[] states = new ArmTrajectoryState[101];
+    double[][] poseStates = posVec.toArray2();
+    double[][] velStates = velVec.toArray2();
+
+    for (int i = 0; i < 101; i++) {
+      ArmTrajectoryState temp = new ArmTrajectoryState(
+          poseStates[i][1],
+          velStates[i][1],
+          poseStates[i][0],
+          velStates[i][0]
+      );
+
+      states[i] = temp;
+    }
+
+    return new ArmTrajectory(time, states);
   }
 
   public static SimpleMatrix cubic_interpolation(
