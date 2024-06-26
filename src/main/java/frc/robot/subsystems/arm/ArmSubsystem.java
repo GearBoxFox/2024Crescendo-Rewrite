@@ -19,6 +19,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import lib.properties.phoenix6.Phoenix6PidPropertyBuilder;
 import lib.properties.phoenix6.PidPropertyPublic;
+import lib.utils.AimbotUtils;
 import lib.utils.ArmTrajectory;
 import monologue.Annotations;
 import monologue.Logged;
@@ -72,6 +73,12 @@ public class ArmSubsystem extends SubsystemBase implements Logged {
   private ArmState m_desiredState = ArmState.DISABLED;
   private boolean m_disabledBrakeMode = false;
 
+  @Annotations.Log
+  private double m_armPoseDegs = 0.0;
+
+  @Annotations.Log
+  private double m_wristPoseDegs = 0.0;
+
   public ArmSubsystem() {
     // setup and config motors
     m_armMaster = new TalonFX(ArmConstants.ARM_MASTER_ID, Constants.CANBUS_NAME);
@@ -114,6 +121,10 @@ public class ArmSubsystem extends SubsystemBase implements Logged {
 
   @Override
   public void periodic() {
+    // update global variables for arm + wrist pose
+    m_armPoseDegs = Units.rotationsToDegrees(m_armMaster.getPosition().getValueAsDouble());
+    m_wristPoseDegs = Units.rotationsToDegrees(m_wristMaster.getPosition().getValueAsDouble());
+
     // clamp values for PID in between acceptable ranges
     m_desiredWristPoseDegs = m_desiredWristPoseDegs > Double.NEGATIVE_INFINITY ?
         MathUtil.clamp(m_desiredWristPoseDegs, ArmConstants.WRIST_LOWER_LIMIT,
@@ -179,6 +190,10 @@ public class ArmSubsystem extends SubsystemBase implements Logged {
       }
       case AIMBOT -> {
         // get aimbot calculations for wrist angle and use it
+        ArmPose aimbotPose = AimbotUtils.aimbotCalculate(m_armPoseDegs);
+
+        m_desiredArmPoseDegs = aimbotPose.armAngle();
+        m_desiredWristPoseDegs = aimbotPose.wristAngle();
       }
       default -> {
         // do nothing

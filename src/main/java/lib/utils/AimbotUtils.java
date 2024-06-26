@@ -34,7 +34,8 @@ public class AimbotUtils {
   }
 
   @Annotations.Log(key = "Left Shooter Setpoint")
-  public static double getLeftSpeed(double distance) {
+  public static double getLeftSpeed() {
+    double distance = getDistanceFromSpeaker(m_poseSupplier.get());
     if (75.0 > distance) {
       return 4500;
     } else if (distance > 170.0) {
@@ -45,7 +46,8 @@ public class AimbotUtils {
   }
 
   @Annotations.Log(key = "Right Shooter Setpoint")
-  public static double getRightSpeed(double distance) {
+  public static double getRightSpeed() {
+    double distance = getDistanceFromSpeaker(m_poseSupplier.get());
     if (75.0 > distance) {
       return 3000;
     } else if (distance > 170.0) {
@@ -80,18 +82,6 @@ public class AimbotUtils {
         ));
   }
 
-  /** Gets the top point of the shooter for checking limits*/
-  public static Translation2d calculateArmPosition(double armAngle, double wristAngle) {
-    return ArmConstants.PIVOT_JOINT_TRANSLATION
-        // translate the length + direction of the arm
-        .plus(new Translation2d(ArmConstants.ARM_LENGTH_METERS,
-            Rotation2d.fromDegrees(armAngle)))
-        // translate the length + direction of the wrist
-        .plus(new Translation2d(ArmConstants.WRIST_LENGTH_METERS,
-            Rotation2d.fromDegrees(360)
-                .minus(Rotation2d.fromDegrees(wristAngle))));
-  }
-
   /** Gets the transformation of the shooter relative to the drive base */
   public static Transform3d getShooterTransformation(double armAngle) {
     return ArmConstants.PIVOT_TRANSLATION_METERS.plus(
@@ -103,7 +93,9 @@ public class AimbotUtils {
     );
   }
 
-  public static ArmPose aimbotCalculate(Pose3d robotPose, double armAngle) {
+  public static ArmPose aimbotCalculate(double armAngle) {
+    Pose3d robotPose = new Pose3d(m_poseSupplier.get());
+
     // the position to target
     Pose3d speakerPose = new Pose3d(AllianceFlipUtil.apply(FieldConstants.CENTER_SPEAKER), new Rotation3d());
     Translation2d speakerPoseGround = speakerPose.getTranslation().toTranslation2d();
@@ -114,15 +106,11 @@ public class AimbotUtils {
     Transform3d robotToSpeaker =
         new Transform3d(shooterPivotPose, speakerPose);
 
-//    Logger.recordOutput("Arm/Speaker Pose", speakerPose);
-//    Logger.recordOutput("Arm/Shooter to Speaker", robotPose.plus(robotToSpeaker));
-
     // find the distance on the ground to the speaker
     double groundDistance = robotPose.getTranslation().toTranslation2d().getDistance(speakerPoseGround);
 
     double desiredWristAngle = Units.radiansToDegrees(Math.atan(robotToSpeaker.getZ()/groundDistance));
     desiredWristAngle = desiredWristAngle + (90 - desiredWristAngle) * 0.06;
-//    Logger.recordOutput("Arm/ Wrist Aimbot Raw", desiredWristAngle);
 
     double safeArmAngle = ArmConstants.WRIST_ARM_GAP - desiredWristAngle;
     safeArmAngle = safeArmAngle >= 0 ? safeArmAngle : 0;
