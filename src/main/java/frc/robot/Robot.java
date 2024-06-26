@@ -46,6 +46,8 @@ public class Robot extends TimedRobot implements Logged {
             t0,
             tf
         );
+
+        System.out.println(temp.sample(0.5));
     }
     
     

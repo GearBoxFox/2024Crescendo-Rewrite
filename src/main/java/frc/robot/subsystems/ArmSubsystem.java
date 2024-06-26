@@ -27,7 +27,8 @@ public class ArmSubsystem extends SubsystemBase implements Logged {
     DISABLED,
     SETPOINT,
     AIMBOT,
-    TRAJECTORY
+    TRAJECTORY,
+    STOW
   }
 
   // Motors and encoders on the arm

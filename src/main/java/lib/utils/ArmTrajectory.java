@@ -45,6 +45,38 @@ public class ArmTrajectory {
     return MathUtil.clamp(time, m_startTime, m_finalTime);
   }
 
+  public ArmTrajectory append(ArmTrajectory other) {
+    double[] otherTimes =
+        Arrays.stream(other.m_times)
+            .map((double time) -> time + m_finalTime)
+            .toArray();
+
+    double[] newTimes = new double[m_times.length + otherTimes.length];
+
+    // combine timestamps for both trajectories
+    for (int i = 0; i < m_times.length + otherTimes.length; i++) {
+      if (i >= m_times.length) {
+        newTimes[i] = otherTimes[i - m_times.length];
+      } else {
+        newTimes[i] = m_times[i];
+      }
+    }
+
+    ArmTrajectoryState[] newStates =
+        new ArmTrajectoryState[m_states.length + other.m_states.length];
+
+    // combine states for both trajectories
+    for (int i = 0; i < m_states.length + other.m_states.length; i++) {
+      if (i >= m_states.length) {
+        newStates[i] = other.m_states[i - m_states.length];
+      } else {
+        newStates[i] = m_states[i];
+      }
+    }
+
+    return new ArmTrajectory(newTimes, newStates);
+  }
+
   public ArmTrajectoryState sample(double desiredTime) {
     /*
     Samples the trajectory at a given time.
