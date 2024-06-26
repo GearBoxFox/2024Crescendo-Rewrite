@@ -55,6 +55,8 @@ public class RobotContainer implements Logged {
                 .withRotationalRate(-m_driveController.getRightX() * m_maxAngularRate)
             ).ignoringDisable(true));
 
+        m_arm.setDefaultCommand(m_arm.stowFactory());
+
         m_driveController.a().whileTrue(m_drive.applyRequest(SwerveRequest.SwerveDriveBrake::new));
         m_driveController.x().whileTrue(m_drive.applyRequest(() -> m_aimbotRequest
             .withVelocityX(-m_driveController.getLeftY() * m_maxSpeed)

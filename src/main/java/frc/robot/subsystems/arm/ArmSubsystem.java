@@ -125,6 +125,8 @@ public class ArmSubsystem extends SubsystemBase implements Logged {
     m_armPoseDegs = Units.rotationsToDegrees(m_armMaster.getPosition().getValueAsDouble());
     m_wristPoseDegs = Units.rotationsToDegrees(m_wristMaster.getPosition().getValueAsDouble());
 
+    handleState();
+
     // clamp values for PID in between acceptable ranges
     m_desiredWristPoseDegs = m_desiredWristPoseDegs > Double.NEGATIVE_INFINITY ?
         MathUtil.clamp(m_desiredWristPoseDegs, ArmConstants.WRIST_LOWER_LIMIT,
@@ -135,6 +137,19 @@ public class ArmSubsystem extends SubsystemBase implements Logged {
         MathUtil.clamp(m_desiredArmPoseDegs, ArmConstants.ARM_LOWER_LIMIT,
             ArmConstants.ARM_UPPER_LIMIT)
         : m_desiredArmPoseDegs;
+
+    // clamp values for velocity during trajectories
+    m_desiredArmVelocity = MathUtil.clamp(
+        m_desiredArmVelocity,
+        -ArmConstants.ARM_MAX_VELOCITY_DEG_S.getValue(),
+        ArmConstants.ARM_MAX_VELOCITY_DEG_S.getValue()
+    );
+
+    m_desiredWristVelocity = MathUtil.clamp(
+        m_desiredWristVelocity,
+        -ArmConstants.WRIST_MAX_VELOCITY_DEG_S.getValue(),
+        ArmConstants.WRIST_MAX_VELOCITY_DEG_S.getValue()
+    );
 
     // if we're disabled go back to hold pose
     if (DriverStation.isDisabled()) {
@@ -260,7 +275,11 @@ public class ArmSubsystem extends SubsystemBase implements Logged {
 
   // default command to stow
   public Command stowFactory() {
-    return runOnce(() -> m_desiredState = ArmState.STOW);
+    return runOnce(() -> {
+      if (m_desiredState != ArmState.DISABLED) {
+        m_desiredState = ArmState.STOW;
+      }
+    });
   }
 
   // set the arm to a static setpoint, use motion magic to get there
