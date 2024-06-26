@@ -11,6 +11,7 @@ import com.ctre.phoenix6.hardware.CANcoder;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.*;
 import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import lib.properties.phoenix6.Phoenix6PidPropertyBuilder;
@@ -56,6 +57,8 @@ public class ArmSubsystem extends SubsystemBase implements Logged {
   @Annotations.Log
   private ArmState m_desiredState = ArmState.DISABLED;
   private boolean m_disabledBrakeMode = false;
+
+  private final TrapezoidProfile.State
 
   public ArmSubsystem() {
     // setup and config motors
