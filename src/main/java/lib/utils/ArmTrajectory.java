@@ -138,7 +138,11 @@ public class ArmTrajectory {
         .mult(multVec);
 
     SimpleMatrix velTVec = SimpleMatrix.filled(100, 1, 0)
-        .concatRows(posTimeMatrix.getColumn(0));
+        .concatColumns(partialPosT.getColumn(0))
+        .concatColumns(partialPosT.getColumn(1))
+        .concatColumns(partialPosT.getColumn(2));
+
+    SimpleMatrix velVec = velTVec.mult(coeffs);
 
     return new ArmTrajectory(null, null);
   }
