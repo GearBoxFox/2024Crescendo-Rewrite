@@ -13,6 +13,7 @@ import com.ctre.phoenix6.signals.*;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import lib.properties.phoenix6.Phoenix6PidPropertyBuilder;
 import lib.properties.phoenix6.PidPropertyPublic;
@@ -57,8 +58,6 @@ public class ArmSubsystem extends SubsystemBase implements Logged {
   @Annotations.Log
   private ArmState m_desiredState = ArmState.DISABLED;
   private boolean m_disabledBrakeMode = false;
-
-  private final TrapezoidProfile.State
 
   public ArmSubsystem() {
     // setup and config motors
@@ -128,11 +127,12 @@ public class ArmSubsystem extends SubsystemBase implements Logged {
       double predictedUnderGap = MathUtil.clamp(ArmConstants.WRIST_ARM_GAP
           - (m_desiredArmPoseDegs + m_desiredWristPoseDegs), 0, 180);
 
-      setWristAngle(m_desiredWristPoseDegs + predictedUnderGap);
-
-      // set the arms angle
-      setArmAngle(m_desiredArmPoseDegs);
+      setJointAngles();
     }
+  }
+
+  public void setJointAngles() {
+
   }
 
   public void enableBrakeMode(boolean enabled) {
@@ -148,7 +148,7 @@ public class ArmSubsystem extends SubsystemBase implements Logged {
     m_armFollower.getConfigurator().apply(config);
   }
 
-  public void enableBrakeModeFactory(boolean enabled) {
+  public Command enableBrakeModeFactory(boolean enabled) {
     return runOnce(() -> m_disabledBrakeMode = enabled).ignoringDisable(true);
   }
 

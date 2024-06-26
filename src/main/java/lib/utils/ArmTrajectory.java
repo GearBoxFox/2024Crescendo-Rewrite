@@ -1,4 +1,4 @@
-package frc.robot.subsystems.arm;
+package lib.utils;
 
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.Matrix;
@@ -125,6 +125,11 @@ public class ArmTrajectory {
 
     SimpleMatrix posTimeMatrix = new SimpleMatrix(new double[][] {tPow0, tPow1, tPow2, tPow3});
     SimpleMatrix posVec = posTimeMatrix.mult(coeffs);
+
+//    SimpleMatrix velTVec = SimpleMatrix.filled(100, 1, 0)
+//        .concatColumns();
+
+    return new ArmTrajectory(null, null);
   }
 
   public static SimpleMatrix cubic_interpolation(
@@ -183,5 +188,18 @@ public class ArmTrajectory {
       }
     }
     return returnvalue;
+  }
+
+  private static SimpleMatrix arange(int order) {
+    ArrayList<Double> tList = new ArrayList<>();
+    double step = 1;
+    double x = 0;
+    for (int i = 0; i < order; i++) {
+      tList.add(x);
+      x += step;
+    }
+
+    double[] time = tList.stream().mapToDouble(Double::valueOf).map((double value) -> Math.pow(value, 0)).toArray();
+    return new SimpleMatrix(time);
   }
 }
