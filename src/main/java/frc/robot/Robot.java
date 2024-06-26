@@ -34,7 +34,7 @@ public class Robot extends TimedRobot implements Logged {
         ArmTrajectory.ArmTrajectoryState state0 =
             new ArmTrajectory.ArmTrajectoryState(0.0, 0.0, 0.0, 0.0);
         ArmTrajectory.ArmTrajectoryState statef =
-            new ArmTrajectory.ArmTrajectoryState(90.0, 90.0, 0.0, 0.0);
+            new ArmTrajectory.ArmTrajectoryState(90.0, 00.0, 90.0, 0.0);
 
         temp = ArmTrajectory.fromCoeffs(
             ArmTrajectory.cubic_interpolation(

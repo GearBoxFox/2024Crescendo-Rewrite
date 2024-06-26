@@ -123,11 +123,22 @@ public class ArmTrajectory {
     double[] tPow2 = tList.stream().mapToDouble(Double::valueOf).map((double value) -> Math.pow(value, 2)).toArray();
     double[] tPow3 = tList.stream().mapToDouble(Double::valueOf).map((double value) -> Math.pow(value, 3)).toArray();
 
-    SimpleMatrix posTimeMatrix = new SimpleMatrix(new double[][] {tPow0, tPow1, tPow2, tPow3});
+    SimpleMatrix posTimeMatrix = new SimpleMatrix(new double[101][4]);
+    posTimeMatrix.setColumn(0, 0, tPow0);
+    posTimeMatrix.setColumn(1, 0, tPow1);
+    posTimeMatrix.setColumn(2, 0, tPow2);
+    posTimeMatrix.setColumn(3, 0, tPow3);
+
     SimpleMatrix posVec = posTimeMatrix.mult(coeffs);
 
-//    SimpleMatrix velTVec = SimpleMatrix.filled(100, 1, 0)
-//        .concatColumns();
+    SimpleMatrix multVec = repeatArange(3,100);
+    SimpleMatrix partialPosT = new SimpleMatrix(posTimeMatrix.getColumn(0))
+        .concatColumns(posTimeMatrix.getColumn(1))
+        .concatColumns(posTimeMatrix.getColumn(2))
+        .mult(multVec);
+
+    SimpleMatrix velTVec = SimpleMatrix.filled(100, 1, 0)
+        .concatRows(posTimeMatrix.getColumn(0));
 
     return new ArmTrajectory(null, null);
   }
@@ -146,19 +157,28 @@ public class ArmTrajectory {
     */
 
     // copy our states into the "output" matrix
-    SimpleMatrix rhs = new SimpleMatrix(new double[][]{
-        {state_0.armPositionDegs, state_0.armVelocityDegsPerSec, state_f.armPositionDegs, state_0.armVelocityDegsPerSec},
-        {state_0.wristPositionDegs, state_0.wristVelocityDegsPerSec, state_f.wristPositionDegs, state_0.wristVelocityDegsPerSec}
-    });
+    SimpleMatrix rhs = new SimpleMatrix(new double[4][2]);
+
+    rhs.setColumn(0, 0,
+        state_0.armPositionDegs,
+        state_0.armVelocityDegsPerSec,
+        state_f.armPositionDegs,
+        state_f.armVelocityDegsPerSec);
+
+    rhs.setColumn(1, 0,
+        state_0.wristPositionDegs,
+        state_0.wristVelocityDegsPerSec,
+        state_f.wristPositionDegs,
+        state_f.wristVelocityDegsPerSec);
 
     SimpleMatrix lhsSimple = SimpleMatrix.filled(4, 4, 0.0);
     lhsSimple.setRow(0, 0, posRow(t_0));
-    lhsSimple.setRow(0, 0, velRow(t_0));
-    lhsSimple.setRow(0, 0, posRow(t_f));
-    lhsSimple.setRow(0, 0, velRow(t_f));
+    lhsSimple.setRow(1, 0, velRow(t_0));
+    lhsSimple.setRow(2, 0, posRow(t_f));
+    lhsSimple.setRow(3, 0, velRow(t_f));
 
 
-    return lhsSimple.invert().mult(rhs);
+    return new Matrix<>(lhsSimple).inv().times(new Matrix<>(rhs)).getStorage();
   }
 
   private static double[] posRow(double t) {
@@ -190,7 +210,7 @@ public class ArmTrajectory {
     return returnvalue;
   }
 
-  private static SimpleMatrix arange(int order) {
+  private static double[] arange(int order) {
     ArrayList<Double> tList = new ArrayList<>();
     double step = 1;
     double x = 0;
@@ -200,6 +220,15 @@ public class ArmTrajectory {
     }
 
     double[] time = tList.stream().mapToDouble(Double::valueOf).map((double value) -> Math.pow(value, 0)).toArray();
-    return new SimpleMatrix(time);
+    return time;
+  }
+
+  private static SimpleMatrix repeatArange(int order, int n) {
+    SimpleMatrix temp = new SimpleMatrix(new double[order][n]);
+    for (int i = 0; i < n; i++) {
+      temp.setColumn(i, 0, arange(order));
+    }
+
+    return temp;
   }
 }
