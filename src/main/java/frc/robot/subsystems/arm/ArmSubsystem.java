@@ -1,9 +1,10 @@
-package frc.robot.subsystems;
+package frc.robot.subsystems.arm;
 
 
 import com.ctre.phoenix6.configs.CANcoderConfiguration;
 import com.ctre.phoenix6.configs.MotorOutputConfigs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
+import com.ctre.phoenix6.controls.DynamicMotionMagicVoltage;
 import com.ctre.phoenix6.controls.Follower;
 import com.ctre.phoenix6.controls.MotionMagicVoltage;
 import com.ctre.phoenix6.controls.PositionVoltage;
@@ -11,7 +12,7 @@ import com.ctre.phoenix6.hardware.CANcoder;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.*;
 import edu.wpi.first.math.MathUtil;
-import edu.wpi.first.math.trajectory.TrapezoidProfile;
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -21,6 +22,7 @@ import monologue.Annotations;
 import monologue.Logged;
 import frc.robot.Constants;
 import frc.robot.Constants.ArmConstants;
+import frc.robot.Constants.ArmSetpoints;
 
 public class ArmSubsystem extends SubsystemBase implements Logged {
   public enum ArmState {
@@ -43,7 +45,7 @@ public class ArmSubsystem extends SubsystemBase implements Logged {
 
   // Motor outputs
   private final PositionVoltage m_pid;
-  private final MotionMagicVoltage m_mm;
+  private final DynamicMotionMagicVoltage m_mm;
 
   private final Follower m_armFollowerRequest;
   private final Follower m_wristFollowerRequest;
@@ -76,7 +78,7 @@ public class ArmSubsystem extends SubsystemBase implements Logged {
     m_pid = new PositionVoltage(0.0)
         .withEnableFOC(true)
         .withSlot(0);
-    m_mm = new MotionMagicVoltage(0.0)
+    m_mm = new DynamicMotionMagicVoltage(0.0, 0.0, 0.0, 0.0)
         .withEnableFOC(true)
         .withSlot(0);
 
@@ -133,7 +135,35 @@ public class ArmSubsystem extends SubsystemBase implements Logged {
   }
 
   public void setJointAngles() {
+    if (m_desiredState != ArmState.TRAJECTORY) {
+      m_armMaster.setControl(m_mm
+          .withPosition(ArmSetpoints.STOW_SETPOINT.armAngle())
+          .withVelocity(Units.degreesToRotations(ArmConstants.ARM_MAX_VELOCITY_DEG_S.getValue()))
+          .withAcceleration(m_mm.Velocity * ArmConstants.MAX_ACCEL_S.getValue()));
 
+      m_wristMaster.setControl(m_mm
+          .withPosition(ArmSetpoints.STOW_SETPOINT.wristAngle())
+          .withVelocity(Units.degreesToRotations(ArmConstants.ARM_MAX_VELOCITY_DEG_S.getValue()))
+          .withAcceleration(m_mm.Velocity * ArmConstants.MAX_ACCEL_S.getValue()));
+    }
+  }
+
+  public boolean atSetpoint() {
+    return m_armMaster.getPosition().getValueAsDouble() == m_desiredArmPoseDegs
+        && m_wristMaster.getPosition().getValueAsDouble() == m_desiredWristPoseDegs;
+  }
+
+  // We have to nudge our "zero" value because of the gear ratio
+  public void resetPosition() {
+    m_armMaster.setPosition(
+        (m_armEncoder.getAbsolutePosition().getValueAsDouble() - Units.degreesToRotations(ArmConstants.OFFSET_NUDGE))
+            / ArmConstants.ARM_CANCODER_MECHANISM_RATIO);
+    m_armFollower.setPosition(m_armMaster.getPosition().getValueAsDouble());
+
+    m_wristMaster.setPosition(
+        (m_wristEncoder.getAbsolutePosition().getValueAsDouble() - Units.degreesToRotations(ArmConstants.OFFSET_NUDGE))
+            / ArmConstants.WRIST_CANCODER_MECHANISM_RATIO);
+    m_wristFollower.setPosition(m_wristMaster.getPosition().getValueAsDouble());
   }
 
   public void enableBrakeMode(boolean enabled) {

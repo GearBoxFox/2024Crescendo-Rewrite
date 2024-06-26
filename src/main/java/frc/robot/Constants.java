@@ -1,9 +1,11 @@
 package frc.robot;
 
+import com.gos.lib.properties.GosDoubleProperty;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.util.Units;
+import frc.robot.subsystems.arm.ArmPose;
 
 public class Constants {
   public static final String CANBUS_NAME = "canivore";
@@ -54,6 +56,15 @@ public class Constants {
 
     public static final double WRIST_ARM_GAP = 10;
 
+    public static final GosDoubleProperty ARM_MAX_VELOCITY_DEG_S =
+        new GosDoubleProperty(false, "Arm/Arm Max Velocity", 360);
+
+    public static final GosDoubleProperty WRIST_MAX_VELOCITY_DEG_S =
+        new GosDoubleProperty(false, "Arm/Wrist Max Velocity", 360);
+
+    public static final GosDoubleProperty MAX_ACCEL_S =
+        new GosDoubleProperty(false, "Arm/Max Accel Seconds", 0.125);
+
     public static final Translation2d PIVOT_JOINT_TRANSLATION =
         new Translation2d(Units.inchesToMeters(9.27),
             Units.inchesToMeters(12.56));
@@ -66,5 +77,26 @@ public class Constants {
 
     public static final double ARM_LENGTH_METERS = Units.inchesToMeters(22.01);
     public static final double WRIST_LENGTH_METERS = Units.inchesToMeters(14.5);
+  }
+
+  public static class ArmSetpoints {
+    public static final ArmPose PASS_SETPOINT = new ArmPose("ArmPoses/Pass Setpoint", false, 45, 55);
+    public static final ArmPose TRAP_PREPARE = new ArmPose(92.0, 145.0);
+    public static final ArmPose TRAP_SCORE = new ArmPose(47.0, 120.5);
+
+    private ArmSetpoints() {
+      throw new IllegalStateException("Static classes should not be constructed");
+    }
+
+    public static final ArmPose AMP_INTERMEDIATE = new ArmPose("ArmPoses/Amp Intermediate", false, 60.0, 145.0);
+
+    public static final ArmPose STOW_SETPOINT = new
+        ArmPose("ArmPoses/Stow", true, 0.0, 35.0);
+    public static final ArmPose INTAKE_SETPOINT =
+        new ArmPose("ArmPoses/Intake", true, -5.75, 45.0);
+    public static final ArmPose AMP_SETPOINT =
+        new ArmPose("ArmPoses/Amp", true, 94.0, 145.0);
+
+    public static final ArmPose STATIC_SHOOTER = new ArmPose("ArmPoses/ShooterTesting", false, 0.0, 55.0);
   }
 }
