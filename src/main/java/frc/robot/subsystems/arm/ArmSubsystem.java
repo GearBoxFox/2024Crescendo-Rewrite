@@ -14,10 +14,12 @@ import com.ctre.phoenix6.signals.*;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import lib.properties.phoenix6.Phoenix6PidPropertyBuilder;
 import lib.properties.phoenix6.PidPropertyPublic;
+import lib.utils.ArmTrajectory;
 import monologue.Annotations;
 import monologue.Logged;
 import frc.robot.Constants;
@@ -57,7 +59,15 @@ public class ArmSubsystem extends SubsystemBase implements Logged {
   @Annotations.Log
   private double m_desiredArmPoseDegs = 0.0;
   @Annotations.Log
+  private double m_desiredArmVelocity = 0.0;
+  @Annotations.Log
   private double m_desiredWristPoseDegs = 0.0;
+  @Annotations.Log
+  private double m_desiredWristVelocity = 0.0;
+
+  private ArmTrajectory m_currentTrajectory = null;
+  private Timer m_trajectoryTimer = new Timer();
+
   @Annotations.Log
   private ArmState m_desiredState = ArmState.DISABLED;
   private boolean m_disabledBrakeMode = false;
@@ -134,8 +144,51 @@ public class ArmSubsystem extends SubsystemBase implements Logged {
     }
   }
 
+  public void handleState() {
+    switch (m_desiredState) {
+      case STOW -> {
+        // reset setpoints to be at stow
+        m_desiredArmPoseDegs = ArmSetpoints.STOW_SETPOINT.armAngle();
+        m_desiredWristPoseDegs = ArmSetpoints.STOW_SETPOINT.wristAngle();
+      }
+      case DISABLED -> {
+        // when disabled default to current position for setpoints
+        m_desiredArmPoseDegs = m_armMaster.getPosition().getValueAsDouble();
+        m_desiredWristPoseDegs = m_wristMaster.getPosition().getValueAsDouble();
+      }
+      case TRAJECTORY -> {
+        // do we have a trajectory?
+        if (m_currentTrajectory != null) {
+          // if timer has started (loop time is 0.02 seconds
+          if (!m_trajectoryTimer.hasElapsed(0.01)) {
+            m_trajectoryTimer.restart();
+          }
+          // get the current state in the trajectory
+          ArmTrajectory.ArmTrajectoryState state =
+              m_currentTrajectory.sample(m_trajectoryTimer.get());
+
+          m_desiredArmPoseDegs = state.armPositionDegs();
+          m_desiredArmVelocity = state.armVelocityDegsPerSec();
+
+          m_desiredWristPoseDegs = state.wristPositionDegs();
+          m_desiredWristVelocity = state.wristVelocityDegsPerSec();
+        } else {
+          m_desiredState = ArmState.STOW;
+          handleState();
+        }
+      }
+      case AIMBOT -> {
+        // get aimbot calculations for wrist angle and use it
+      }
+      default -> {
+        // do nothing
+      }
+    }
+  }
+
   public void setJointAngles() {
     if (m_desiredState != ArmState.TRAJECTORY) {
+      // basic setpoints
       m_armMaster.setControl(m_mm
           .withPosition(ArmSetpoints.STOW_SETPOINT.armAngle())
           .withVelocity(Units.degreesToRotations(ArmConstants.ARM_MAX_VELOCITY_DEG_S.getValue()))
@@ -145,6 +198,15 @@ public class ArmSubsystem extends SubsystemBase implements Logged {
           .withPosition(ArmSetpoints.STOW_SETPOINT.wristAngle())
           .withVelocity(Units.degreesToRotations(ArmConstants.ARM_MAX_VELOCITY_DEG_S.getValue()))
           .withAcceleration(m_mm.Velocity * ArmConstants.MAX_ACCEL_S.getValue()));
+    } else {
+      // following a trajectory
+      m_armMaster.setControl(
+          m_pid.withPosition(Units.degreesToRotations(m_desiredArmPoseDegs))
+              .withVelocity(Units.degreesToRotations(m_desiredArmVelocity)));
+
+      m_wristMaster.setControl(
+          m_pid.withPosition(Units.degreesToRotations(m_desiredWristPoseDegs))
+              .withVelocity(Units.degreesToRotations(m_desiredWristVelocity)));
     }
   }
 
@@ -177,6 +239,22 @@ public class ArmSubsystem extends SubsystemBase implements Logged {
 
     m_armMaster.getConfigurator().apply(config);
     m_armFollower.getConfigurator().apply(config);
+  }
+
+  // command factories
+
+  // default command to stow
+  public Command stowFactory() {
+    return runOnce(() -> m_desiredState = ArmState.STOW);
+  }
+
+  // set the arm to a static setpoint, use motion magic to get there
+  public Command setArmSetpoint(ArmPose setpoint) {
+    return run(() -> {
+      m_desiredState = ArmState.SETPOINT;
+      m_desiredArmPoseDegs = setpoint.armAngle();
+      m_desiredWristPoseDegs = setpoint.wristAngle();
+    });
   }
 
   public Command enableBrakeModeFactory(boolean enabled) {
@@ -220,6 +298,8 @@ public class ArmSubsystem extends SubsystemBase implements Logged {
 
     m_armEncoder.getConfigurator().apply(armEncoderConfig);
     m_wristEncoder.getConfigurator().apply(wristEncoderConfig);
+
+    resetPosition();
   }
 }
 
