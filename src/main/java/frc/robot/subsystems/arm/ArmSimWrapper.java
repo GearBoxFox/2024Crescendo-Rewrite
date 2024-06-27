@@ -1,6 +1,7 @@
 package frc.robot.subsystems.arm;
 
 import com.ctre.phoenix6.hardware.TalonFX;
+import com.ctre.phoenix6.sim.ChassisReference;
 import com.ctre.phoenix6.sim.TalonFXSimState;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.util.Units;
@@ -21,9 +22,12 @@ public class ArmSimWrapper {
     m_armSimState = armMotor.getSimState();
     m_wristSimState = wristMotor.getSimState();
 
+    m_armSimState.Orientation = ChassisReference.Clockwise_Positive;
+    m_wristSimState.Orientation = ChassisReference.CounterClockwise_Positive;
+
     m_armSim = new SingleJointedArmSim(
             DCMotor.getKrakenX60Foc(2), ArmConstants.ARM_SENSOR_MECHANISM_RATIO, 0.0060620304,
-            ArmConstants.ARM_LENGTH_METERS, 0, Units.degreesToRadians(180), true, Units.degreesToRadians(45));
+            ArmConstants.ARM_LENGTH_METERS, 0.0, Units.degreesToRadians(180), true, Units.degreesToRadians(45));
     m_wristSim = new SingleJointedArmSim(
             DCMotor.getKrakenX60Foc(2), ArmConstants.WRIST_SENSOR_MECHANISM_RATIO, 0.0060620304,
             ArmConstants.WRIST_LENGTH_METERS, 0.0, Units.degreesToRadians(180), true, Units.degreesToRadians(45));
@@ -41,8 +45,9 @@ public class ArmSimWrapper {
 
     m_armSimState.setRawRotorPosition(Units.radiansToRotations(m_armSim.getAngleRads()));
     m_wristSimState.setRawRotorPosition(Units.radiansToRotations(m_wristSim.getAngleRads()));
+  }
 
-    m_armSimState.setRotorVelocity(Units.radiansToRotations(m_armSim.getVelocityRadPerSec()));
-    m_wristSimState.setRotorVelocity(Units.radiansToRotations(m_wristSim.getVelocityRadPerSec()));
+  public double getArmPosition() {
+    return Units.radiansToRotations(m_armSim.getAngleRads());
   }
 }

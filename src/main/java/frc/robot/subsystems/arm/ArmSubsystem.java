@@ -1,6 +1,7 @@
 package frc.robot.subsystems.arm;
 
 
+import com.ctre.phoenix6.BaseStatusSignal;
 import com.ctre.phoenix6.Utils;
 import com.ctre.phoenix6.configs.CANcoderConfiguration;
 import com.ctre.phoenix6.configs.MotorOutputConfigs;
@@ -132,7 +133,7 @@ public class ArmSubsystem extends SubsystemBase implements Logged {
   @Override
   public void periodic() {
     // update global variables for arm + wrist pose
-    m_armPoseDegs = Units.rotationsToDegrees(m_armMaster.getPosition().getValueAsDouble());
+    m_armPoseDegs = Units.rotationsToDegrees(m_armMaster.getPosition().refresh().getValueAsDouble());
     m_wristPoseDegs = Units.rotationsToDegrees(m_wristMaster.getPosition().getValueAsDouble());
 
     handleState();
@@ -182,6 +183,9 @@ public class ArmSubsystem extends SubsystemBase implements Logged {
 
     m_armViz.update(m_armPoseDegs, m_wristPoseDegs);
     m_setpointViz.update(m_desiredArmPoseDegs, m_desiredWristPoseDegs);
+
+    log("Arm Output", m_armMaster.get());
+    log("Raw arm position", m_sim.getArmPosition());
   }
 
   public void handleState() {
@@ -234,12 +238,12 @@ public class ArmSubsystem extends SubsystemBase implements Logged {
     if (m_desiredState != ArmState.TRAJECTORY) {
       // basic setpoints
       m_armMaster.setControl(m_mm
-          .withPosition(ArmSetpoints.STOW_SETPOINT.armAngle())
+          .withPosition(Units.degreesToRotations(m_desiredArmPoseDegs))
           .withVelocity(Units.degreesToRotations(ArmConstants.ARM_MAX_VELOCITY_DEG_S.getValue()))
           .withAcceleration(m_mm.Velocity * ArmConstants.MAX_ACCEL_S.getValue()));
 
       m_wristMaster.setControl(m_mm
-          .withPosition(ArmSetpoints.STOW_SETPOINT.wristAngle())
+          .withPosition(Units.degreesToRotations(m_desiredWristPoseDegs))
           .withVelocity(Units.degreesToRotations(ArmConstants.ARM_MAX_VELOCITY_DEG_S.getValue()))
           .withAcceleration(m_mm.Velocity * ArmConstants.MAX_ACCEL_S.getValue()));
     } else {
@@ -270,6 +274,14 @@ public class ArmSubsystem extends SubsystemBase implements Logged {
         (m_wristEncoder.getAbsolutePosition().getValueAsDouble() - Units.degreesToRotations(ArmConstants.OFFSET_NUDGE))
             / ArmConstants.WRIST_CANCODER_MECHANISM_RATIO);
     m_wristFollower.setPosition(m_wristMaster.getPosition().getValueAsDouble());
+
+    if (Utils.isSimulation()) {
+      m_armMaster.setPosition(Units.degreesToRotations(0.0));
+      m_armFollower.setPosition(Units.degreesToRotations(0.0));
+
+      m_wristMaster.setPosition(Units.degreesToRotations(45.0));
+      m_wristFollower.setPosition(Units.degreesToRotations(45.0));
+    }
   }
 
   public void enableBrakeMode(boolean enabled) {
@@ -351,6 +363,12 @@ public class ArmSubsystem extends SubsystemBase implements Logged {
 
     m_armEncoder.getConfigurator().apply(armEncoderConfig);
     m_wristEncoder.getConfigurator().apply(wristEncoderConfig);
+
+    BaseStatusSignal.setUpdateFrequencyForAll(
+            100,
+            m_armMaster.getPosition(),
+            m_wristMaster.getPosition()
+    );
 
     resetPosition();
   }
