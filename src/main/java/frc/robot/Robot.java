@@ -5,6 +5,7 @@
 
 package frc.robot;
 
+import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -54,6 +55,8 @@ public class Robot extends TimedRobot implements Logged {
     @Override
     public void robotPeriodic() {
         CommandScheduler.getInstance().run();
+
+        log("Blank Pose3d", new Pose3d[]{new Pose3d(), new Pose3d()});
 
         Monologue.setFileOnly(DriverStation.isFMSAttached());
         Monologue.updateAll();
