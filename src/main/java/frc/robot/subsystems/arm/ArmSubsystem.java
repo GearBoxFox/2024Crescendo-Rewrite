@@ -133,7 +133,7 @@ public class ArmSubsystem extends SubsystemBase implements Logged {
   @Override
   public void periodic() {
     // update global variables for arm + wrist pose
-    m_armPoseDegs = Units.rotationsToDegrees(m_armMaster.getPosition().refresh().getValueAsDouble());
+    m_armPoseDegs = Units.rotationsToDegrees(m_armMaster.getPosition().getValueAsDouble());
     m_wristPoseDegs = Units.rotationsToDegrees(m_wristMaster.getPosition().getValueAsDouble());
 
     handleState();
@@ -323,7 +323,9 @@ public class ArmSubsystem extends SubsystemBase implements Logged {
 
   @Override
   public void simulationPeriodic() {
-    m_sim.update();
+//    m_sim.update();
+
+    m_armMaster.getSimState().setRawRotorPosition(0.5 / ArmConstants.ARM_SENSOR_MECHANISM_RATIO);
   }
 
   public void configMotors() {
