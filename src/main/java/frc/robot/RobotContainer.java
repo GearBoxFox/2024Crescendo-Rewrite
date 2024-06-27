@@ -65,6 +65,8 @@ public class RobotContainer implements Logged {
         m_driveController.x().whileTrue(m_drive.applyRequest(() -> m_aimbotRequest
             .withVelocityX(-m_driveController.getLeftY() * m_maxSpeed)
             .withVelocityY(-m_driveController.getLeftX() * m_maxSpeed)));
+
+        m_driveController.b().whileTrue(m_arm.stowFactory());
     }
     
     

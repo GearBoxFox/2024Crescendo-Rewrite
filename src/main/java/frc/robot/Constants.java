@@ -66,7 +66,7 @@ public class Constants {
         new GosDoubleProperty(false, "Arm/Max Accel Seconds", 0.125);
 
     public static final Translation2d PIVOT_JOINT_TRANSLATION =
-        new Translation2d(Units.inchesToMeters(9.27),
+        new Translation2d(Units.inchesToMeters(11.27),
             Units.inchesToMeters(12.56));
 
     public static final Transform3d PIVOT_TRANSLATION_METERS =

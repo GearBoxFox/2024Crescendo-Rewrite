@@ -193,8 +193,8 @@ public class ArmSubsystem extends SubsystemBase implements Logged {
       }
       case DISABLED -> {
         // when disabled default to current position for setpoints
-        m_desiredArmPoseDegs = m_armMaster.getPosition().getValueAsDouble();
-        m_desiredWristPoseDegs = m_wristMaster.getPosition().getValueAsDouble();
+        m_desiredArmPoseDegs = m_armPoseDegs;
+        m_desiredWristPoseDegs = m_wristPoseDegs;
       }
       case TRAJECTORY -> {
         // do we have a trajectory?
