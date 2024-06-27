@@ -13,7 +13,7 @@ import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.commands.drive.PointAtPoseRequest;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.CommandSwerveDrive;
-import frc.robot.subsystems.ShooterSubsystem;
+import frc.robot.subsystems.shooter.ShooterSubsystem;
 import lib.utils.FieldConstants;
 import monologue.Logged;
 

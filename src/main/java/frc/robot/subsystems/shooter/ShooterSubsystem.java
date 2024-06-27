@@ -1,4 +1,4 @@
-package frc.robot.subsystems;
+package frc.robot.subsystems.shooter;
 
 
 import com.ctre.phoenix6.configs.MotorOutputConfigs;
@@ -40,10 +40,7 @@ public class ShooterSubsystem extends SubsystemBase implements Logged {
   private final PidPropertyPublic m_leftPid;
   private final PidPropertyPublic m_rightPid;
 
-  private FlywheelSim m_leftSim;
-  private FlywheelSim m_rightSim;
-  private TalonFXSimState m_leftSimState;
-  private TalonFXSimState m_rightSimState;
+  private ShooterSimWrapper m_sim;
 
   @Annotations.Log
   private double leftRPMSetpoint = 0.0;
@@ -89,15 +86,7 @@ public class ShooterSubsystem extends SubsystemBase implements Logged {
 
     // setup flywheel sim
     if (RobotBase.isSimulation()) {
-      // CTRE Sim states
-      m_leftSimState = m_leftShooter.getSimState();
-      m_rightSimState = m_rightShooter.getSimState();
-
-      // simple sim controllers
-      m_leftSim = new FlywheelSim(DCMotor.getFalcon500(1),
-          1.0, 0.001);
-      m_rightSim = new FlywheelSim(DCMotor.getFalcon500(1),
-          1.0, 0.001);
+      m_sim = new ShooterSimWrapper(m_leftShooter, m_rightShooter);
     }
   }
 
@@ -169,20 +158,7 @@ public class ShooterSubsystem extends SubsystemBase implements Logged {
   @Override
   public void simulationPeriodic() {
     // set input voltage from motors
-    m_leftSimState.setSupplyVoltage(RobotController.getBatteryVoltage());
-    m_rightSimState.setSupplyVoltage(RobotController.getBatteryVoltage());
-
-    m_leftSim.setInputVoltage(m_leftSimState.getMotorVoltage());
-    m_rightSim.setInputVoltage(m_rightSimState.getMotorVoltage());
-
-    m_leftSim.update(0.020); // assume 20ms sim loop time
-    m_rightSim.update(0.020);
-
-    // update motor velocity and position from sim
-    m_leftSimState.setRotorVelocity(
-        Units.radiansToRotations(m_leftSim.getAngularVelocityRadPerSec()));
-    m_rightSimState.setRotorVelocity(
-        Units.radiansToRotations(m_rightSim.getAngularVelocityRadPerSec()));
+    m_sim.update();
   }
 
   public void configMotors() {
