@@ -41,7 +41,7 @@ public class RobotContainer implements Logged {
         .withDeadband(m_maxSpeed * 0.1).withRotationalDeadband(m_maxAngularRate * 0.1)
         .withTargetPose(FieldConstants.Speaker.CENTER_SPEAKER_OPENING);
 
-    private final Telemetry swerveTelemetry = new Telemetry(m_maxSpeed);
+    private final Telemetry swerveTelemetry = new Telemetry();
 
     public RobotContainer() {
         AimbotUtils.setPoseSupplier(() -> m_drive.getState().Pose);
