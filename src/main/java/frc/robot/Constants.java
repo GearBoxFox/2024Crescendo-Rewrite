@@ -85,7 +85,7 @@ public class Constants {
     public static final int INTAKE_ID = 14;
     public static final int INDEXER_ID = 15;
 
-    public static final double SHOOTER_KP = 0.010;
+    public static final double SHOOTER_KP = 0.110;
     public static final double SHOOTER_KI = 0.0;
     public static final double SHOOTER_KD = 0.00675;
     public static final double SHOOTER_KF = 0.000172;

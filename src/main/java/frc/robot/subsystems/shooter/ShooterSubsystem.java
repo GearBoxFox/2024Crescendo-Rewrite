@@ -65,7 +65,7 @@ public class ShooterSubsystem extends SubsystemBase implements Logged {
 
     // Setup PID Controllers
     m_leftPid = new Phoenix6PidPropertyBuilder("Shooter/Left PID",
-        false,
+        true,
         m_leftShooter,
         0)
         .addP(ShooterConstants.SHOOTER_KP)
@@ -75,7 +75,7 @@ public class ShooterSubsystem extends SubsystemBase implements Logged {
         .build();
 
     m_rightPid = new Phoenix6PidPropertyBuilder("Shooter/Right PID",
-        false,
+        true,
         m_rightShooter,
         0)
         .addP(ShooterConstants.SHOOTER_KP)
