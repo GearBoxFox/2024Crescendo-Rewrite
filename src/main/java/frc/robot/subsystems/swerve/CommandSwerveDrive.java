@@ -1,4 +1,4 @@
-package frc.robot.subsystems;
+package frc.robot.subsystems.swerve;
 
 import static edu.wpi.first.units.Units.Volts;
 
@@ -92,8 +92,6 @@ public class CommandSwerveDrive extends SwerveDrivetrain implements Subsystem, L
     if (Utils.isSimulation()) {
       startSimThread();
     }
-
-    this.registerTelemetry(this::logState);
   }
 
   public CommandSwerveDrive(SwerveDrivetrainConstants driveTrainConstants, SwerveModuleConstants... modules) {
@@ -102,8 +100,6 @@ public class CommandSwerveDrive extends SwerveDrivetrain implements Subsystem, L
     if (Utils.isSimulation()) {
       startSimThread();
     }
-
-    this.registerTelemetry(this::logState);
   }
 
   private void configurePathPlanner() {
@@ -163,14 +159,6 @@ public class CommandSwerveDrive extends SwerveDrivetrain implements Subsystem, L
       updateSimState(deltaTime, RobotController.getBatteryVoltage());
     });
     m_simNotifier.startPeriodic(SIM_LOOP_PERIOD);
-  }
-
-  public void logState(SwerveDriveState state) {
-    log("Robot Pose", state.Pose);
-    log("Robot Speed", state.speeds);
-
-    log("Module States", state.ModuleStates);
-    log("Module Setpoints", state.ModuleTargets);
   }
 
   @Override

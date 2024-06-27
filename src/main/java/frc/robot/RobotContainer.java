@@ -12,8 +12,9 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.commands.drive.PointAtPoseRequest;
 import frc.robot.generated.TunerConstants;
-import frc.robot.subsystems.CommandSwerveDrive;
+import frc.robot.subsystems.swerve.CommandSwerveDrive;
 import frc.robot.subsystems.arm.ArmSubsystem;
+import frc.robot.subsystems.swerve.Telemetry;
 import lib.utils.AimbotUtils;
 import lib.utils.FieldConstants;
 import monologue.Logged;
@@ -40,8 +41,11 @@ public class RobotContainer implements Logged {
         .withDeadband(m_maxSpeed * 0.1).withRotationalDeadband(m_maxAngularRate * 0.1)
         .withTargetPose(FieldConstants.Speaker.CENTER_SPEAKER_OPENING);
 
+    private final Telemetry swerveTelemetry = new Telemetry(m_maxSpeed);
+
     public RobotContainer() {
         AimbotUtils.setPoseSupplier(() -> m_drive.getState().Pose);
+        m_drive.registerTelemetry(swerveTelemetry::telemeterize);
 
         configureBindings();
     }
