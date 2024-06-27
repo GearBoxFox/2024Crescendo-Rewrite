@@ -1,6 +1,7 @@
 package frc.robot.subsystems.arm;
 
 
+import com.ctre.phoenix6.Utils;
 import com.ctre.phoenix6.configs.CANcoderConfiguration;
 import com.ctre.phoenix6.configs.MotorOutputConfigs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
@@ -79,6 +80,8 @@ public class ArmSubsystem extends SubsystemBase implements Logged {
   @Annotations.Log
   private double m_wristPoseDegs = 0.0;
 
+  private ArmSimWrapper m_sim;
+
   public ArmSubsystem() {
     // setup and config motors
     m_armMaster = new TalonFX(ArmConstants.ARM_MASTER_ID, Constants.CANBUS_NAME);
@@ -117,6 +120,10 @@ public class ArmSubsystem extends SubsystemBase implements Logged {
         .addKG(ArmConstants.WRIST_KG, GravityTypeValue.Arm_Cosine)
         .addKS(ArmConstants.WRIST_KS)
         .build();
+
+    if (Utils.isSimulation()) {
+      m_sim = new ArmSimWrapper(m_armMaster, m_wristMaster);
+    }
   }
 
   @Override
@@ -165,6 +172,7 @@ public class ArmSubsystem extends SubsystemBase implements Logged {
       // check to see if the wrist is currently too close to the rest of the arm
       double predictedUnderGap = MathUtil.clamp(ArmConstants.WRIST_ARM_GAP
           - (m_desiredArmPoseDegs + m_desiredWristPoseDegs), 0, 180);
+      m_desiredWristPoseDegs += predictedUnderGap;
 
       setJointAngles();
     }
@@ -293,6 +301,11 @@ public class ArmSubsystem extends SubsystemBase implements Logged {
 
   public Command enableBrakeModeFactory(boolean enabled) {
     return runOnce(() -> m_disabledBrakeMode = enabled).ignoringDisable(true);
+  }
+
+  @Override
+  public void simulationPeriodic() {
+    m_sim.update();
   }
 
   public void configMotors() {
