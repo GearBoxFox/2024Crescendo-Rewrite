@@ -289,11 +289,11 @@ public class ArmSubsystem extends SubsystemBase implements Logged {
 
   // default command to stow
   public Command stowFactory() {
-    return runOnce(() -> {
-      if (m_desiredState != ArmState.DISABLED) {
-        m_desiredState = ArmState.STOW;
-      }
-    });
+    return runOnce(() -> m_desiredState = ArmState.STOW);
+  }
+
+  public Command defaultCommandFactory() {
+    return stowFactory().unless(() -> m_desiredState == ArmState.DISABLED);
   }
 
   // set the arm to a static setpoint, use motion magic to get there
