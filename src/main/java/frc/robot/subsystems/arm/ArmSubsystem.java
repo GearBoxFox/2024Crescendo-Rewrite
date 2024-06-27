@@ -82,6 +82,9 @@ public class ArmSubsystem extends SubsystemBase implements Logged {
 
   private ArmSimWrapper m_sim;
 
+  private final ArmVisualizer m_armViz = new ArmVisualizer("Current Pose");
+  private final ArmVisualizer m_setpointViz = new ArmVisualizer("Setpoint Pose");
+
   public ArmSubsystem() {
     // setup and config motors
     m_armMaster = new TalonFX(ArmConstants.ARM_MASTER_ID, Constants.CANBUS_NAME);
@@ -176,6 +179,9 @@ public class ArmSubsystem extends SubsystemBase implements Logged {
 
       setJointAngles();
     }
+
+    m_armViz.update(m_armPoseDegs, m_wristPoseDegs);
+    m_setpointViz.update(m_desiredArmPoseDegs, m_desiredWristPoseDegs);
   }
 
   public void handleState() {
