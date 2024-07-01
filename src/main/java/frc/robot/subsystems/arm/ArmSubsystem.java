@@ -88,12 +88,12 @@ public class ArmSubsystem extends SubsystemBase implements Logged {
 
   public ArmSubsystem() {
     // setup and config motors
-    m_armMaster = new TalonFX(ArmConstants.ARM_MASTER_ID, Constants.CANBUS_NAME);
-    m_armFollower = new TalonFX(ArmConstants.ARM_FOLLOWER_ID, Constants.CANBUS_NAME);
+    m_armMaster = new TalonFX(ArmConstants.ARM_MASTER_ID);
+    m_armFollower = new TalonFX(ArmConstants.ARM_FOLLOWER_ID);
     m_armEncoder = new CANcoder(ArmConstants.ARM_ENCODER_ID, Constants.CANBUS_NAME);
 
-    m_wristMaster = new TalonFX(ArmConstants.WRIST_MASTER_ID, Constants.CANBUS_NAME);
-    m_wristFollower = new TalonFX(ArmConstants.WRIST_FOLLOWER_ID, Constants.CANBUS_NAME);
+    m_wristMaster = new TalonFX(ArmConstants.WRIST_MASTER_ID);
+    m_wristFollower = new TalonFX(ArmConstants.WRIST_FOLLOWER_ID);
     m_wristEncoder = new CANcoder(ArmConstants.WRIST_ENCODER_ID, Constants.CANBUS_NAME);
 
     configMotors();
@@ -126,6 +126,8 @@ public class ArmSubsystem extends SubsystemBase implements Logged {
         .build();
 
     if (Utils.isSimulation()) {
+      m_armMaster.getPosition().setUpdateFrequency(1000);
+      m_wristMaster.getPosition().setUpdateFrequency(1000);
       m_sim = new ArmSimWrapper(m_armMaster, m_wristMaster);
     }
   }
@@ -170,7 +172,7 @@ public class ArmSubsystem extends SubsystemBase implements Logged {
     }
 
     // check to make sure we're not in manual control
-    enableBrakeMode(m_desiredState == ArmState.DISABLED && m_disabledBrakeMode);
+//    enableBrakeMode(m_desiredState == ArmState.DISABLED && m_disabledBrakeMode);
 
     if (m_desiredState != ArmState.DISABLED) {
       // check to see if the wrist is currently too close to the rest of the arm
@@ -323,9 +325,9 @@ public class ArmSubsystem extends SubsystemBase implements Logged {
 
   @Override
   public void simulationPeriodic() {
-//    m_sim.update();
+    m_sim.update();
 
-    m_armMaster.getSimState().setRawRotorPosition(0.5 / ArmConstants.ARM_SENSOR_MECHANISM_RATIO);
+//    m_armMaster.getSimState().setRawRotorPosition(0.5 / ArmConstants.ARM_SENSOR_MECHANISM_RATIO);
   }
 
   public void configMotors() {

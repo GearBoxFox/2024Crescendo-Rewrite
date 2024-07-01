@@ -24,6 +24,7 @@ public class Robot extends TimedRobot implements Logged {
     
     @Override
     public void robotInit() {
+        DriverStation.silenceJoystickConnectionWarning(true);
         robotContainer = new RobotContainer();
 
         boolean lazyLogging = false;
