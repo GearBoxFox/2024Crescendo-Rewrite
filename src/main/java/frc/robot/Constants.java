@@ -105,7 +105,7 @@ public class Constants {
     );
 
     private static final ArmTrajectory.ArmTrajectoryState middle = new ArmTrajectory.ArmTrajectoryState(
-            AMP_INTERMEDIATE.wristAngle(), 0.0, AMP_INTERMEDIATE.armAngle(), 0.0
+            AMP_INTERMEDIATE.wristAngle(), 0.0, AMP_INTERMEDIATE.armAngle(), 100.0
     );
 
     private static final ArmTrajectory.ArmTrajectoryState end = new ArmTrajectory.ArmTrajectoryState(
@@ -114,16 +114,16 @@ public class Constants {
 
     public static final ArmTrajectory AMP_TRAJECTORY = ArmTrajectory.fromCoeffs(
             ArmTrajectory.cubic_interpolation(
-                    0.0, 1.0, start, middle
+                    0.0, 0.5, start, middle
             ),
             0.0,
-            1.0
+            0.5
     ).append(ArmTrajectory.fromCoeffs(
             ArmTrajectory.cubic_interpolation(
-                    0.0, 1.0, middle, end
+                    0.0, 0.5, middle, end
             ),
             0.0,
-            1.0
+            0.5
     ));
   }
 }

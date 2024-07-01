@@ -142,6 +142,12 @@ public class ArmSubsystem extends SubsystemBase implements Logged {
 
     handleState();
 
+    // Reset trajectory timer when not actively running a trajectory
+    if (m_desiredState != ArmState.TRAJECTORY) {
+      m_trajectoryTimer.stop();
+      m_trajectoryTimer.reset();
+    }
+
     // clamp values for PID in between acceptable ranges
     m_desiredWristPoseDegs = m_desiredWristPoseDegs > Double.NEGATIVE_INFINITY ?
         MathUtil.clamp(m_desiredWristPoseDegs, ArmConstants.WRIST_LOWER_LIMIT,
@@ -221,6 +227,8 @@ public class ArmSubsystem extends SubsystemBase implements Logged {
           m_desiredWristPoseDegs = state.wristPositionDegs();
           m_desiredWristVelocity = state.wristVelocityDegsPerSec();
         } else {
+          m_trajectoryTimer.stop();
+          m_trajectoryTimer.reset();
           m_desiredState = ArmState.STOW;
           handleState();
         }
@@ -322,10 +330,11 @@ public class ArmSubsystem extends SubsystemBase implements Logged {
   }
 
   public Command setArmTrajectory(ArmTrajectory traj) {
-    return run(() -> {
+    return runEnd(() -> {
       m_desiredState = ArmState.TRAJECTORY;
       m_currentTrajectory = traj;
-    });
+    },
+            () -> m_currentTrajectory = null);
   }
 
   public Command enableBrakeModeFactory(boolean enabled) {
