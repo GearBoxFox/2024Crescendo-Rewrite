@@ -102,7 +102,9 @@ public class ArmSubsystem extends SubsystemBase implements Logged {
     m_pid = new PositionVoltage(0.0)
         .withEnableFOC(true)
         .withSlot(0);
-    m_mm = new DynamicMotionMagicVoltage(0.0, 0.0, 0.0, 0.0)
+    m_mm = new DynamicMotionMagicVoltage(0.0,
+            Units.degreesToRotations(360.0),
+            Units.degreesToRotations(360.0 * 0.125), 0.0)
         .withEnableFOC(true)
         .withSlot(0);
 
@@ -240,14 +242,14 @@ public class ArmSubsystem extends SubsystemBase implements Logged {
     if (m_desiredState != ArmState.TRAJECTORY) {
       // basic setpoints
       m_armMaster.setControl(m_mm
-          .withPosition(Units.degreesToRotations(m_desiredArmPoseDegs))
-          .withVelocity(Units.degreesToRotations(ArmConstants.ARM_MAX_VELOCITY_DEG_S.getValue()))
-          .withAcceleration(m_mm.Velocity * ArmConstants.MAX_ACCEL_S.getValue()));
+          .withPosition(Units.degreesToRotations(m_desiredArmPoseDegs)));
+//          .withVelocity(Units.degreesToRotations(ArmConstants.ARM_MAX_VELOCITY_DEG_S.getValue()))
+//          .withAcceleration(m_mm.Velocity * ArmConstants.MAX_ACCEL_S.getValue()));
 
       m_wristMaster.setControl(m_mm
-          .withPosition(Units.degreesToRotations(m_desiredWristPoseDegs))
-          .withVelocity(Units.degreesToRotations(ArmConstants.ARM_MAX_VELOCITY_DEG_S.getValue()))
-          .withAcceleration(m_mm.Velocity * ArmConstants.MAX_ACCEL_S.getValue()));
+          .withPosition(Units.degreesToRotations(m_desiredWristPoseDegs)));
+//          .withVelocity(Units.degreesToRotations(ArmConstants.ARM_MAX_VELOCITY_DEG_S.getValue()))
+//          .withAcceleration(m_mm.Velocity * ArmConstants.MAX_ACCEL_S.getValue()));
     } else {
       // following a trajectory
       m_armMaster.setControl(
@@ -368,11 +370,11 @@ public class ArmSubsystem extends SubsystemBase implements Logged {
     m_armEncoder.getConfigurator().apply(armEncoderConfig);
     m_wristEncoder.getConfigurator().apply(wristEncoderConfig);
 
-    BaseStatusSignal.setUpdateFrequencyForAll(
-            100,
-            m_armMaster.getPosition(),
-            m_wristMaster.getPosition()
-    );
+//    BaseStatusSignal.setUpdateFrequencyForAll(
+//            100,
+//            m_armMaster.getPosition(),
+//            m_wristMaster.getPosition()
+//    );
 
     resetPosition();
   }

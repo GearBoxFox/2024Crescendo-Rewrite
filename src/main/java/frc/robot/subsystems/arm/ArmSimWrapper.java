@@ -25,18 +25,18 @@ public class ArmSimWrapper {
     m_armSimState.Orientation = ChassisReference.Clockwise_Positive;
     m_wristSimState.Orientation = ChassisReference.CounterClockwise_Positive;
 
-    m_armSim = new SingleJointedArmSim(
-            DCMotor.getKrakenX60Foc(2), ArmConstants.ARM_SENSOR_MECHANISM_RATIO, 0.0060620304,
-            ArmConstants.ARM_LENGTH_METERS, 0.0, Units.degreesToRadians(180), true, Units.degreesToRadians(45));
-    m_wristSim = new SingleJointedArmSim(
-            DCMotor.getKrakenX60Foc(2), ArmConstants.WRIST_SENSOR_MECHANISM_RATIO, 0.0060620304,
-            ArmConstants.WRIST_LENGTH_METERS, 0.0, Units.degreesToRadians(180), true, Units.degreesToRadians(45));
-  }
-
-  public void update() {
     m_armSimState.setSupplyVoltage(RobotController.getBatteryVoltage());
     m_wristSimState.setSupplyVoltage(RobotController.getBatteryVoltage());
 
+    m_armSim = new SingleJointedArmSim(
+            DCMotor.getKrakenX60Foc(2), 1.0, 0.0060620304,
+            ArmConstants.ARM_LENGTH_METERS, Units.degreesToRadians(ArmConstants.ARM_LOWER_LIMIT), Units.degreesToRadians(180), true, Units.degreesToRadians(45));
+    m_wristSim = new SingleJointedArmSim(
+            DCMotor.getKrakenX60Foc(2), 1.0, 0.0060620304,
+            ArmConstants.WRIST_LENGTH_METERS, Units.degreesToRadians(ArmConstants.WRIST_LOWER_LIMIT), Units.degreesToRadians(180), true, Units.degreesToRadians(45));
+  }
+
+  public void update() {
     m_armSim.setInputVoltage(m_armSimState.getMotorVoltage());
     m_wristSim.setInputVoltage(m_wristSimState.getMotorVoltage());
 
