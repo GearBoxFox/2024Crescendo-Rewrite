@@ -6,6 +6,7 @@ import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.util.Units;
 import frc.robot.subsystems.arm.ArmPose;
+import lib.utils.ArmTrajectory;
 
 public class Constants {
   public static final String CANBUS_NAME = "canivore";
@@ -98,5 +99,31 @@ public class Constants {
         new ArmPose("ArmPoses/Amp", true, 94.0, 145.0);
 
     public static final ArmPose STATIC_SHOOTER = new ArmPose("ArmPoses/ShooterTesting", false, 0.0, 55.0);
+
+    private static final ArmTrajectory.ArmTrajectoryState start = new ArmTrajectory.ArmTrajectoryState(
+            STOW_SETPOINT.wristAngle(), 0.0, STOW_SETPOINT.armAngle(), 0.0
+    );
+
+    private static final ArmTrajectory.ArmTrajectoryState middle = new ArmTrajectory.ArmTrajectoryState(
+            AMP_INTERMEDIATE.wristAngle(), 0.0, AMP_INTERMEDIATE.armAngle(), 0.0
+    );
+
+    private static final ArmTrajectory.ArmTrajectoryState end = new ArmTrajectory.ArmTrajectoryState(
+            AMP_SETPOINT.wristAngle(), 0.0, AMP_SETPOINT.armAngle(), 0.0
+    );
+
+    public static final ArmTrajectory AMP_TRAJECTORY = ArmTrajectory.fromCoeffs(
+            ArmTrajectory.cubic_interpolation(
+                    0.0, 1.0, start, middle
+            ),
+            0.0,
+            1.0
+    ).append(ArmTrajectory.fromCoeffs(
+            ArmTrajectory.cubic_interpolation(
+                    0.0, 1.0, middle, end
+            ),
+            0.0,
+            1.0
+    ));
   }
 }

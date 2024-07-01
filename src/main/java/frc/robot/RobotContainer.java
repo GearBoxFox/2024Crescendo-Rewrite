@@ -68,8 +68,7 @@ public class RobotContainer implements Logged {
             .withVelocityY(-m_driveController.getLeftX() * m_maxSpeed)));
 
     m_driveController.b().whileTrue(m_arm.stowFactory());
-    m_driveController.y().whileTrue(m_arm.setArmSetpoint(Constants.ArmSetpoints.INTAKE_SETPOINT));
-    m_driveController.povUp().whileTrue(m_arm.setArmSetpoint(Constants.ArmSetpoints.AMP_SETPOINT));
+    m_driveController.y().whileTrue(m_arm.setArmTrajectory(Constants.ArmSetpoints.AMP_TRAJECTORY));
   }
 
 

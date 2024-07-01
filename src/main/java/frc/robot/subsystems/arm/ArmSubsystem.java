@@ -88,12 +88,12 @@ public class ArmSubsystem extends SubsystemBase implements Logged {
 
   public ArmSubsystem() {
     // setup and config motors
-    m_armMaster = new TalonFX(ArmConstants.ARM_MASTER_ID);
-    m_armFollower = new TalonFX(ArmConstants.ARM_FOLLOWER_ID);
+    m_armMaster = new TalonFX(ArmConstants.ARM_MASTER_ID, Constants.CANBUS_NAME);
+    m_armFollower = new TalonFX(ArmConstants.ARM_FOLLOWER_ID, Constants.CANBUS_NAME);
     m_armEncoder = new CANcoder(ArmConstants.ARM_ENCODER_ID, Constants.CANBUS_NAME);
 
-    m_wristMaster = new TalonFX(ArmConstants.WRIST_MASTER_ID);
-    m_wristFollower = new TalonFX(ArmConstants.WRIST_FOLLOWER_ID);
+    m_wristMaster = new TalonFX(ArmConstants.WRIST_MASTER_ID, Constants.CANBUS_NAME);
+    m_wristFollower = new TalonFX(ArmConstants.WRIST_FOLLOWER_ID, Constants.CANBUS_NAME);
     m_wristEncoder = new CANcoder(ArmConstants.WRIST_ENCODER_ID, Constants.CANBUS_NAME);
 
     configMotors();
@@ -318,6 +318,13 @@ public class ArmSubsystem extends SubsystemBase implements Logged {
       m_desiredState = ArmState.SETPOINT;
       m_desiredArmPoseDegs = setpoint.armAngle();
       m_desiredWristPoseDegs = setpoint.wristAngle();
+    });
+  }
+
+  public Command setArmTrajectory(ArmTrajectory traj) {
+    return run(() -> {
+      m_desiredState = ArmState.TRAJECTORY;
+      m_currentTrajectory = traj;
     });
   }
 

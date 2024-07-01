@@ -30,26 +30,6 @@ public class Robot extends TimedRobot implements Logged {
         boolean lazyLogging = false;
         boolean fileOnly = false;
         Monologue.setupMonologue(this, "Robot", fileOnly, lazyLogging);
-
-        double t0 = 0.0;
-        double tf= 1.0;
-        ArmTrajectory.ArmTrajectoryState state0 =
-            new ArmTrajectory.ArmTrajectoryState(0.0, 0.0, 0.0, 0.0);
-        ArmTrajectory.ArmTrajectoryState statef =
-            new ArmTrajectory.ArmTrajectoryState(90.0, 00.0, 90.0, 0.0);
-
-        temp = ArmTrajectory.fromCoeffs(
-            ArmTrajectory.cubic_interpolation(
-                t0,
-                tf,
-                state0,
-                statef
-            ),
-            t0,
-            tf
-        );
-
-        System.out.println(temp.sample(0.5));
     }
     
     
