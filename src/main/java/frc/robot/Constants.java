@@ -71,7 +71,7 @@ public class Constants {
             Units.inchesToMeters(12.56));
 
     public static final Transform3d PIVOT_TRANSLATION_METERS =
-        new Transform3d(Units.inchesToMeters(9.27),
+        new Transform3d(Units.inchesToMeters(11.27),
             0.0,
             Units.inchesToMeters(12.56),
             new Rotation3d());

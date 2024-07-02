@@ -199,9 +199,6 @@ public class ArmSubsystem extends SubsystemBase implements Logged {
 
     m_armViz.update(m_armPoseDegs, m_wristPoseDegs);
     m_setpointViz.update(m_desiredArmPoseDegs, m_desiredWristPoseDegs);
-
-    log("Arm Output", m_armMaster.get());
-    log("Raw arm position", m_sim.getArmPosition());
   }
 
   public void handleState() {
