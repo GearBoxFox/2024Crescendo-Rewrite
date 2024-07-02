@@ -37,6 +37,10 @@ public class ArmTrajectory {
     m_finalTime = m_times[m_times.length - 1];
   }
 
+  public double getFinalTime() {
+    return m_finalTime;
+  }
+
   public double clipTime(double time) {
     /*
     Limits a given time between the trajectories start and end time

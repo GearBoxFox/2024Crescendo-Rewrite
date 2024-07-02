@@ -35,6 +35,7 @@ public class ArmSubsystem extends SubsystemBase implements Logged {
     SETPOINT,
     AIMBOT,
     TRAJECTORY,
+    TRAJECTORY_REVERSE,
     STOW
   }
 
@@ -69,7 +70,8 @@ public class ArmSubsystem extends SubsystemBase implements Logged {
   private double m_desiredWristVelocity = 0.0;
 
   private ArmTrajectory m_currentTrajectory = null;
-  private Timer m_trajectoryTimer = new Timer();
+  private final Timer m_trajectoryTimer = new Timer();
+  private double m_reverseTimer = 0.0;
 
   @Annotations.Log
   private ArmState m_desiredState = ArmState.DISABLED;
@@ -143,9 +145,13 @@ public class ArmSubsystem extends SubsystemBase implements Logged {
     handleState();
 
     // Reset trajectory timer when not actively running a trajectory
-    if (m_desiredState != ArmState.TRAJECTORY) {
+    if (m_desiredState != ArmState.TRAJECTORY && m_desiredState != ArmState.TRAJECTORY_REVERSE) {
       m_trajectoryTimer.stop();
       m_trajectoryTimer.reset();
+    }
+
+    if (m_desiredState != ArmState.TRAJECTORY_REVERSE) {
+      m_reverseTimer = 0.0;
     }
 
     // clamp values for PID in between acceptable ranges
@@ -233,6 +239,34 @@ public class ArmSubsystem extends SubsystemBase implements Logged {
           handleState();
         }
       }
+      case TRAJECTORY_REVERSE -> {
+        if (m_currentTrajectory != null) {
+          if (m_reverseTimer == 0.0) {
+            // restart the timer and find how long the last trajectory ran
+            m_trajectoryTimer.stop();
+            m_reverseTimer = Math.min(m_trajectoryTimer.get(), m_currentTrajectory.getFinalTime());
+            m_trajectoryTimer.restart();
+          } else {
+            // reverse the time by getting the difference between the trajectories length and the timer
+            double time = m_reverseTimer - m_trajectoryTimer.get();
+
+            if (time <= 0.0) {
+              m_desiredState = ArmState.STOW;
+              handleState();
+            }
+
+            // get the current state in the trajectory
+            ArmTrajectory.ArmTrajectoryState state =
+                    m_currentTrajectory.sample(time);
+
+            m_desiredArmPoseDegs = state.armPositionDegs();
+            m_desiredArmVelocity = state.armVelocityDegsPerSec();
+
+            m_desiredWristPoseDegs = state.wristPositionDegs();
+            m_desiredWristVelocity = state.wristVelocityDegsPerSec();
+          }
+        }
+      }
       case AIMBOT -> {
         // get aimbot calculations for wrist angle and use it
         ArmPose aimbotPose = AimbotUtils.aimbotCalculate(m_armPoseDegs);
@@ -317,7 +351,7 @@ public class ArmSubsystem extends SubsystemBase implements Logged {
   }
 
   public Command defaultCommandFactory() {
-    return stowFactory().unless(() -> m_desiredState == ArmState.DISABLED);
+    return stowFactory().unless(() -> m_desiredState == ArmState.DISABLED || m_desiredState == ArmState.TRAJECTORY_REVERSE);
   }
 
   // set the arm to a static setpoint, use motion magic to get there
@@ -331,10 +365,10 @@ public class ArmSubsystem extends SubsystemBase implements Logged {
 
   public Command setArmTrajectory(ArmTrajectory traj) {
     return runEnd(() -> {
-      m_desiredState = ArmState.TRAJECTORY;
-      m_currentTrajectory = traj;
-    },
-            () -> m_currentTrajectory = null);
+              m_desiredState = ArmState.TRAJECTORY;
+              m_currentTrajectory = traj;
+            },
+            () -> m_desiredState = ArmState.TRAJECTORY_REVERSE);
   }
 
   public Command enableBrakeModeFactory(boolean enabled) {
@@ -344,8 +378,6 @@ public class ArmSubsystem extends SubsystemBase implements Logged {
   @Override
   public void simulationPeriodic() {
     m_sim.update();
-
-//    m_armMaster.getSimState().setRawRotorPosition(0.5 / ArmConstants.ARM_SENSOR_MECHANISM_RATIO);
   }
 
   public void configMotors() {
