@@ -12,12 +12,10 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.commands.drive.PointAtPoseRequest;
 import frc.robot.generated.TunerConstants;
-import frc.robot.subsystems.arm.ArmSimWrapper;
 import frc.robot.subsystems.swerve.CommandSwerveDrive;
 import frc.robot.subsystems.arm.ArmSubsystem;
 import frc.robot.subsystems.swerve.Telemetry;
 import lib.utils.AimbotUtils;
-import frc.robot.subsystems.CommandSwerveDrive;
 import frc.robot.subsystems.shooter.ShooterSubsystem;
 import lib.utils.FieldConstants;
 import monologue.Logged;
@@ -27,11 +25,9 @@ public class RobotContainer implements Logged {
   private double m_maxSpeed = TunerConstants.kSpeedAt12VoltsMps; // kSpeedAt12VoltsMps desired top speed
   private double m_maxAngularRate = 1.5 * Math.PI; // 3/4 of a rotation per second max angular velocity
 
-    // subsystems
-    private final CommandSwerveDrive m_drive = TunerConstants.DriveTrain;
-    private final ShooterSubsystem m_shooter = new ShooterSubsystem();
   // subsystems
   private final CommandSwerveDrive m_drive = TunerConstants.DriveTrain;
+  private final ShooterSubsystem m_shooter = new ShooterSubsystem();
   private final ArmSubsystem m_arm = new ArmSubsystem();
 
   // driver controllers
@@ -72,13 +68,13 @@ public class RobotContainer implements Logged {
             .withVelocityX(-m_driveController.getLeftY() * m_maxSpeed)
             .withVelocityY(-m_driveController.getLeftX() * m_maxSpeed)));
 
-        m_driveController.b().whileTrue(
+    m_driveController.b().whileTrue(
             m_shooter.setShooterVelocities(3500, 3500)
-        );
-    }
+    );
+  }
     
     
-    public Command getAutonomousCommand() {
-        return Commands.print("No autonomous command configured");
-    }
+  public Command getAutonomousCommand() {
+    return Commands.print("No autonomous command configured");
+  }
 }

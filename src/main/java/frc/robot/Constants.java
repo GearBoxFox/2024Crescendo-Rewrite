@@ -80,41 +80,11 @@ public class Constants {
     public static final double WRIST_LENGTH_METERS = Units.inchesToMeters(14.5);
   }
 
-  public static class ShooterConstants {
-    public static final GosDoubleProperty ACCEL_COMP_FACTOR =
-        new GosDoubleProperty(false, "Shooter/Acceleration Compensation", 0.100);
-    public static final int TOF_ID = 28;
-
-    private ShooterConstants() {
-      throw new IllegalStateException("Static classes should not be constructed");
-    }
-
-
-    public static final int LEFT_ID = 25;
-    public static final int RIGHT_ID = 26;
-    public static final int KICKER_ID = 24;
-    public static final int INTAKE_ID = 14;
-    public static final int INDEXER_ID = 15;
-
-    public static final double SHOOTER_KP = 0.110;
-    public static final double SHOOTER_KI = 0.0;
-    public static final double SHOOTER_KD = 0.00675;
-    public static final double SHOOTER_KF = 0.000172;
-    public static final double SHOOTER_KS = 0.21963;
-    public static final double SHOOTER_KV = 0.174541;
-
-    public static final boolean TOP_LEFT_INVERTED = false;
-    public static final boolean TOP_RIGHT_INVERTED = true;
-    public static final boolean BOTTOM_LEFT_INVERTED = true;
-    public static final boolean BOTTOM_RIGHT_INVERTED = false;
-    public static final boolean KICKER_INVERTED = true;
-  }
-
   public static class ArmSetpoints {
+
     public static final ArmPose PASS_SETPOINT = new ArmPose("ArmPoses/Pass Setpoint", false, 45, 55);
     public static final ArmPose TRAP_PREPARE = new ArmPose(92.0, 145.0);
     public static final ArmPose TRAP_SCORE = new ArmPose(47.0, 120.5);
-
     private ArmSetpoints() {
       throw new IllegalStateException("Static classes should not be constructed");
     }
@@ -123,11 +93,11 @@ public class Constants {
 
     public static final ArmPose STOW_SETPOINT = new
         ArmPose("ArmPoses/Stow", true, 0.0, 35.0);
+
     public static final ArmPose INTAKE_SETPOINT =
         new ArmPose("ArmPoses/Intake", true, -5.75, 45.0);
     public static final ArmPose AMP_SETPOINT =
         new ArmPose("ArmPoses/Amp", true, 94.0, 145.0);
-
     public static final ArmPose STATIC_SHOOTER = new ArmPose("ArmPoses/ShooterTesting", false, 0.0, 55.0);
 
     private static final ArmTrajectory.ArmTrajectoryState start = new ArmTrajectory.ArmTrajectoryState(
@@ -155,5 +125,57 @@ public class Constants {
             0.0,
             0.5
     ));
+
+  }
+
+  public static class ShooterConstants {
+    public static final GosDoubleProperty ACCEL_COMP_FACTOR =
+            new GosDoubleProperty(false, "Shooter/Acceleration Compensation", 0.100);
+    public static final int TOF_ID = 28;
+
+    private ShooterConstants() {
+      throw new IllegalStateException("Static classes should not be constructed");
+    }
+
+
+    public static final int LEFT_ID = 25;
+    public static final int RIGHT_ID = 26;
+    public static final int KICKER_ID = 24;
+    public static final int INTAKE_ID = 14;
+    public static final int INDEXER_ID = 15;
+
+    public static final double SHOOTER_KP = 0.110;
+    public static final double SHOOTER_KI = 0.0;
+    public static final double SHOOTER_KD = 0.00675;
+    public static final double SHOOTER_KF = 0.000172;
+    public static final double SHOOTER_KS = 0.21963;
+    public static final double SHOOTER_KV = 0.174541;
+
+    public static final boolean TOP_LEFT_INVERTED = false;
+    public static final boolean TOP_RIGHT_INVERTED = true;
+    public static final boolean BOTTOM_LEFT_INVERTED = true;
+    public static final boolean BOTTOM_RIGHT_INVERTED = false;
+    public static final boolean KICKER_INVERTED = true;
+  }
+
+  public static class ClimberConstants {
+    private ClimberConstants() {
+      throw new IllegalStateException("Static class should not be constructed");
+    }
+
+    public static final int LEFT_CLIMBER_ID = 16;
+    public static final int RIGHT_CLIMBER_ID = 17;
+
+    public static final double CLIMBER_KP = 48.0;
+    public static final double CLIMBER_KI = 0.0;
+    public static final double CLIMBER_KD = 0.0;
+
+    public static final double CLIMBER_KV = 0.0;
+    public static final double CLIMBER_KS = 0.0;
+    public static final double CLIMBER_KA = 0.0;
+    public static final double CLIMBER_KG = 0.0;
+
+    public static final double CLIMBER_GEAR_RATIO = 0.0;
+    public static final double CLIMBER_CONVERSION_FACTOR_INCHES = 0.0;
   }
 }
