@@ -13,6 +13,7 @@ import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.commands.drive.PointAtPoseRequest;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.CommandSwerveDrive;
+import frc.robot.subsystems.shooter.ShooterSubsystem;
 import lib.utils.FieldConstants;
 import monologue.Logged;
 
@@ -23,6 +24,7 @@ public class RobotContainer implements Logged {
 
     // subsystems
     private final CommandSwerveDrive m_drive = TunerConstants.DriveTrain;
+    private final ShooterSubsystem m_shooter = new ShooterSubsystem();
 
     // driver controllers
     private final CommandXboxController m_driveController = new CommandXboxController(0);
@@ -54,6 +56,10 @@ public class RobotContainer implements Logged {
         m_driveController.x().whileTrue(m_drive.applyRequest(() -> m_aimbotRequest
             .withVelocityX(-m_driveController.getLeftY() * m_maxSpeed)
             .withVelocityY(-m_driveController.getLeftX() * m_maxSpeed)));
+
+        m_driveController.b().whileTrue(
+            m_shooter.setShooterVelocities(3500, 3500)
+        );
     }
     
     
