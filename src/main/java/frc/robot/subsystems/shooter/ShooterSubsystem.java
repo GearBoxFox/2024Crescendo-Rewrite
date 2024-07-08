@@ -40,7 +40,12 @@ public class ShooterSubsystem extends SubsystemBase implements Logged {
   private final PidPropertyPublic m_leftPid;
   private final PidPropertyPublic m_rightPid;
 
-  private ShooterSimWrapper m_sim;
+  // sim variables
+  private TalonFXSimState m_leftSimState;
+  private TalonFXSimState m_rightSimState;
+
+  private FlywheelSim m_leftSim;
+  private FlywheelSim m_rightSim;
 
   @Annotations.Log
   private double leftRPMSetpoint = 0.0;
@@ -86,7 +91,11 @@ public class ShooterSubsystem extends SubsystemBase implements Logged {
 
     // setup flywheel sim
     if (RobotBase.isSimulation()) {
-      m_sim = new ShooterSimWrapper(m_leftShooter, m_rightShooter);
+      m_leftSimState = m_leftShooter.getSimState();
+      m_rightSimState = m_rightShooter.getSimState();
+
+      m_leftSim = new FlywheelSim(DCMotor.getFalcon500(1), 1, 0.01);
+      m_rightSim = new FlywheelSim(DCMotor.getFalcon500(1), 1, 0.01);
     }
   }
 
@@ -158,7 +167,21 @@ public class ShooterSubsystem extends SubsystemBase implements Logged {
   @Override
   public void simulationPeriodic() {
     // set input voltage from motors
-    m_sim.update();
+    m_leftSimState.setSupplyVoltage(RobotController.getBatteryVoltage());
+    m_rightSimState.setSupplyVoltage(RobotController.getBatteryVoltage());
+
+    m_leftSim.setInputVoltage(m_leftSimState.getMotorVoltage());
+    m_rightSim.setInputVoltage(m_rightSimState.getMotorVoltage());
+
+    m_leftSim.update(0.02); // assume 20ms sim loop time
+    m_rightSim.update(0.02);
+
+    m_leftSimState.setRotorVelocity(
+            Units.radiansToRotations(m_leftSim.getAngularVelocityRadPerSec())
+    );
+    m_rightSimState.setRotorVelocity(
+            Units.radiansToRotations(m_rightSim.getAngularVelocityRadPerSec())
+    );
   }
 
   public void configMotors() {
