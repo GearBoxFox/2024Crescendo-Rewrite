@@ -1,33 +1,36 @@
 package frc.robot.subsystems.arm;
 
 
-import com.ctre.phoenix6.BaseStatusSignal;
 import com.ctre.phoenix6.Utils;
 import com.ctre.phoenix6.configs.CANcoderConfiguration;
 import com.ctre.phoenix6.configs.MotorOutputConfigs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.DynamicMotionMagicVoltage;
 import com.ctre.phoenix6.controls.Follower;
-import com.ctre.phoenix6.controls.MotionMagicVoltage;
 import com.ctre.phoenix6.controls.PositionVoltage;
 import com.ctre.phoenix6.hardware.CANcoder;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.*;
+import com.ctre.phoenix6.sim.ChassisReference;
+import com.ctre.phoenix6.sim.TalonFXSimState;
 import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.Timer;
+import edu.wpi.first.wpilibj.simulation.SingleJointedArmSim;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.Constants;
+import frc.robot.Constants.ArmConstants;
+import frc.robot.Constants.ArmSetpoints;
 import lib.properties.phoenix6.Phoenix6PidPropertyBuilder;
 import lib.properties.phoenix6.PidPropertyPublic;
 import lib.utils.AimbotUtils;
 import lib.utils.ArmTrajectory;
 import monologue.Annotations;
 import monologue.Logged;
-import frc.robot.Constants;
-import frc.robot.Constants.ArmConstants;
-import frc.robot.Constants.ArmSetpoints;
 
 public class ArmSubsystem extends SubsystemBase implements Logged {
   public enum ArmState {
@@ -83,7 +86,11 @@ public class ArmSubsystem extends SubsystemBase implements Logged {
   @Annotations.Log
   private double m_wristPoseDegs = 0.0;
 
-  private ArmSimWrapper m_sim;
+  private TalonFXSimState m_armSimState;
+  private TalonFXSimState m_wristSimState;
+
+  private SingleJointedArmSim m_armSim;
+  private SingleJointedArmSim m_wristSim;
 
   private final ArmVisualizer m_armViz = new ArmVisualizer("Current Pose");
   private final ArmVisualizer m_setpointViz = new ArmVisualizer("Setpoint Pose");
@@ -132,7 +139,22 @@ public class ArmSubsystem extends SubsystemBase implements Logged {
     if (Utils.isSimulation()) {
       m_armMaster.getPosition().setUpdateFrequency(1000);
       m_wristMaster.getPosition().setUpdateFrequency(1000);
-      m_sim = new ArmSimWrapper(m_armMaster, m_wristMaster);
+
+      m_armSimState = m_armMaster.getSimState();
+      m_wristSimState = m_wristMaster.getSimState();
+
+      m_armSimState.Orientation = ChassisReference.Clockwise_Positive;
+      m_wristSimState.Orientation = ChassisReference.CounterClockwise_Positive;
+
+      m_armSimState.setSupplyVoltage(RobotController.getBatteryVoltage());
+      m_wristSimState.setSupplyVoltage(RobotController.getBatteryVoltage());
+
+      m_armSim = new SingleJointedArmSim(
+              DCMotor.getKrakenX60Foc(2), ArmConstants.ARM_SENSOR_MECHANISM_RATIO, 0.0060620304,
+              ArmConstants.ARM_LENGTH_METERS, Units.degreesToRadians(ArmConstants.ARM_LOWER_LIMIT), Units.degreesToRadians(180), true, Units.degreesToRadians(45));
+      m_wristSim = new SingleJointedArmSim(
+              DCMotor.getKrakenX60Foc(2), ArmConstants.WRIST_SENSOR_MECHANISM_RATIO, 0.0060620304,
+              ArmConstants.WRIST_LENGTH_METERS, Units.degreesToRadians(ArmConstants.WRIST_LOWER_LIMIT), Units.degreesToRadians(180), true, Units.degreesToRadians(45));
     }
   }
 
@@ -281,14 +303,14 @@ public class ArmSubsystem extends SubsystemBase implements Logged {
     if (m_desiredState != ArmState.TRAJECTORY) {
       // basic setpoints
       m_armMaster.setControl(m_mm
-          .withPosition(Units.degreesToRotations(m_desiredArmPoseDegs)));
-//          .withVelocity(Units.degreesToRotations(ArmConstants.ARM_MAX_VELOCITY_DEG_S.getValue()))
-//          .withAcceleration(m_mm.Velocity * ArmConstants.MAX_ACCEL_S.getValue()));
+          .withPosition(Units.degreesToRotations(m_desiredArmPoseDegs))
+          .withVelocity(Units.degreesToRotations(ArmConstants.ARM_MAX_VELOCITY_DEG_S.getValue()))
+          .withAcceleration(m_mm.Velocity * ArmConstants.MAX_ACCEL_S.getValue()));
 
       m_wristMaster.setControl(m_mm
-          .withPosition(Units.degreesToRotations(m_desiredWristPoseDegs)));
-//          .withVelocity(Units.degreesToRotations(ArmConstants.ARM_MAX_VELOCITY_DEG_S.getValue()))
-//          .withAcceleration(m_mm.Velocity * ArmConstants.MAX_ACCEL_S.getValue()));
+          .withPosition(Units.degreesToRotations(m_desiredWristPoseDegs))
+          .withVelocity(Units.degreesToRotations(ArmConstants.ARM_MAX_VELOCITY_DEG_S.getValue()))
+          .withAcceleration(m_mm.Velocity * ArmConstants.MAX_ACCEL_S.getValue()));
     } else {
       // following a trajectory
       m_armMaster.setControl(
@@ -374,7 +396,14 @@ public class ArmSubsystem extends SubsystemBase implements Logged {
 
   @Override
   public void simulationPeriodic() {
-    m_sim.update();
+    m_armSim.setInputVoltage(m_armSimState.getMotorVoltage());
+    m_wristSim.setInputVoltage(m_wristSimState.getMotorVoltage());
+
+    m_armSim.update(0.020);
+    m_wristSim.update(0.020);
+
+    m_armSimState.setRawRotorPosition(Units.radiansToRotations(m_armSim.getAngleRads()) * ArmConstants.ARM_SENSOR_MECHANISM_RATIO);
+    m_wristSimState.setRawRotorPosition(Units.radiansToRotations(m_wristSim.getAngleRads()) * ArmConstants.WRIST_SENSOR_MECHANISM_RATIO);
   }
 
   public void configMotors() {
