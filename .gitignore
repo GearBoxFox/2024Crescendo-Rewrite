@@ -338,3 +338,7 @@ bin/
 /ctre_sim/*
 /logs/*
 /networktables.json.bck
+/.idea/checkstyle-idea.xml
+/networktables.json.bck
+/.idea/inspectionProfiles/Project_Default.xml
+/.idea/sonarlint.xml

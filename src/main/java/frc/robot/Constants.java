@@ -5,6 +5,8 @@ import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.util.Units;
+import frc.robot.subsystems.arm.ArmPose;
+import lib.utils.ArmTrajectory;
 
 public class Constants {
   public static final String CANBUS_NAME = "canivore";
@@ -55,12 +57,21 @@ public class Constants {
 
     public static final double WRIST_ARM_GAP = 10;
 
+    public static final GosDoubleProperty ARM_MAX_VELOCITY_DEG_S =
+        new GosDoubleProperty(false, "Arm/Arm Max Velocity", 360);
+
+    public static final GosDoubleProperty WRIST_MAX_VELOCITY_DEG_S =
+        new GosDoubleProperty(false, "Arm/Wrist Max Velocity", 360);
+
+    public static final GosDoubleProperty MAX_ACCEL_S =
+        new GosDoubleProperty(false, "Arm/Max Accel Seconds", 0.125);
+
     public static final Translation2d PIVOT_JOINT_TRANSLATION =
-        new Translation2d(Units.inchesToMeters(9.27),
+        new Translation2d(Units.inchesToMeters(11.27),
             Units.inchesToMeters(12.56));
 
     public static final Transform3d PIVOT_TRANSLATION_METERS =
-        new Transform3d(Units.inchesToMeters(9.27),
+        new Transform3d(Units.inchesToMeters(11.27),
             0.0,
             Units.inchesToMeters(12.56),
             new Rotation3d());
@@ -97,5 +108,52 @@ public class Constants {
     public static final boolean BOTTOM_LEFT_INVERTED = true;
     public static final boolean BOTTOM_RIGHT_INVERTED = false;
     public static final boolean KICKER_INVERTED = true;
+  }
+
+  public static class ArmSetpoints {
+    public static final ArmPose PASS_SETPOINT = new ArmPose("ArmPoses/Pass Setpoint", false, 45, 55);
+    public static final ArmPose TRAP_PREPARE = new ArmPose(92.0, 145.0);
+    public static final ArmPose TRAP_SCORE = new ArmPose(47.0, 120.5);
+
+    private ArmSetpoints() {
+      throw new IllegalStateException("Static classes should not be constructed");
+    }
+
+    public static final ArmPose AMP_INTERMEDIATE = new ArmPose("ArmPoses/Amp Intermediate", false, 60.0, 145.0);
+
+    public static final ArmPose STOW_SETPOINT = new
+        ArmPose("ArmPoses/Stow", true, 0.0, 35.0);
+    public static final ArmPose INTAKE_SETPOINT =
+        new ArmPose("ArmPoses/Intake", true, -5.75, 45.0);
+    public static final ArmPose AMP_SETPOINT =
+        new ArmPose("ArmPoses/Amp", true, 94.0, 145.0);
+
+    public static final ArmPose STATIC_SHOOTER = new ArmPose("ArmPoses/ShooterTesting", false, 0.0, 55.0);
+
+    private static final ArmTrajectory.ArmTrajectoryState start = new ArmTrajectory.ArmTrajectoryState(
+            STOW_SETPOINT.wristAngle(), 0.0, STOW_SETPOINT.armAngle(), 0.0
+    );
+
+    private static final ArmTrajectory.ArmTrajectoryState middle = new ArmTrajectory.ArmTrajectoryState(
+            AMP_INTERMEDIATE.wristAngle(), 0.0, AMP_INTERMEDIATE.armAngle(), 100.0
+    );
+
+    private static final ArmTrajectory.ArmTrajectoryState end = new ArmTrajectory.ArmTrajectoryState(
+            AMP_SETPOINT.wristAngle(), 0.0, AMP_SETPOINT.armAngle(), 0.0
+    );
+
+    public static final ArmTrajectory AMP_TRAJECTORY = ArmTrajectory.fromCoeffs(
+            ArmTrajectory.cubic_interpolation(
+                    0.0, 0.5, start, middle
+            ),
+            0.0,
+            0.5
+    ).append(ArmTrajectory.fromCoeffs(
+            ArmTrajectory.cubic_interpolation(
+                    0.0, 0.5, middle, end
+            ),
+            0.0,
+            0.5
+    ));
   }
 }

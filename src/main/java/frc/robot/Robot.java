@@ -5,10 +5,12 @@
 
 package frc.robot;
 
+import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
+import lib.utils.ArmTrajectory;
 import monologue.Logged;
 import monologue.Monologue;
 
@@ -16,10 +18,13 @@ public class Robot extends TimedRobot implements Logged {
     private Command autonomousCommand;
     
     private RobotContainer robotContainer;
+
+    private ArmTrajectory temp;
     
     
     @Override
     public void robotInit() {
+        DriverStation.silenceJoystickConnectionWarning(true);
         robotContainer = new RobotContainer();
 
         boolean lazyLogging = false;
@@ -31,6 +36,8 @@ public class Robot extends TimedRobot implements Logged {
     @Override
     public void robotPeriodic() {
         CommandScheduler.getInstance().run();
+
+        log("Blank Pose3d", new Pose3d[]{new Pose3d(), new Pose3d()});
 
         Monologue.setFileOnly(DriverStation.isFMSAttached());
         Monologue.updateAll();
