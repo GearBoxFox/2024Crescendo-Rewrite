@@ -410,6 +410,13 @@ public class ArmSubsystem extends SubsystemBase implements Logged {
             () -> m_desiredState = ArmState.TRAJECTORY_REVERSE);
   }
 
+  public Command toggleTrajectory(ArmTrajectory traj) {
+    return runOnce(() -> {
+      m_desiredState = ArmState.TRAJECTORY;
+      m_currentTrajectory = traj;
+    });
+  }
+
   public Command enableBrakeModeFactory(boolean enabled) {
     return runOnce(() -> m_disabledBrakeMode = enabled).ignoringDisable(true);
   }

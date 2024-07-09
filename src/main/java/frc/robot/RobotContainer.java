@@ -81,6 +81,8 @@ public class RobotContainer implements Logged {
     m_operatorController.leftBumper().whileTrue(m_climber.setPositionFactory(-1640.0));
     m_operatorController.rightBumper().whileTrue(m_climber.setPositionFactory(1230.0));
     m_operatorController.y().whileTrue(m_climber.setPositionFactory(30.0));
+
+    m_operatorController.a().toggleOnTrue(m_arm.setArmTrajectory(Constants.ArmSetpoints.AMP_TRAJECTORY));
   }
 
   public void configureCommandsTab() {
