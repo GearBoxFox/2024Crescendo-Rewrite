@@ -338,6 +338,9 @@ public class ArmSubsystem extends SubsystemBase implements Logged {
           m_pid.withPosition(Units.degreesToRotations(m_desiredWristPoseDegs))
               .withVelocity(Units.degreesToRotations(m_desiredWristVelocity)));
     }
+
+    m_armFollower.setControl(m_armFollowerRequest);
+    m_wristFollower.setControl(m_wristFollowerRequest);
   }
 
   public boolean atSetpoint() {
