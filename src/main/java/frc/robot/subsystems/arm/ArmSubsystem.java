@@ -32,6 +32,8 @@ import lib.utils.ArmTrajectory;
 import monologue.Annotations;
 import monologue.Logged;
 
+import java.util.function.BooleanSupplier;
+
 public class ArmSubsystem extends SubsystemBase implements Logged {
   public enum ArmState {
     DISABLED,
@@ -95,7 +97,13 @@ public class ArmSubsystem extends SubsystemBase implements Logged {
   private final ArmVisualizer m_armViz = new ArmVisualizer("Current Pose");
   private final ArmVisualizer m_setpointViz = new ArmVisualizer("Setpoint Pose");
 
+  private final BooleanSupplier m_climberLock;
+
   public ArmSubsystem() {
+    this(() -> false);
+  }
+
+  public ArmSubsystem(BooleanSupplier climberLock) {
     // setup and config motors
     m_armMaster = new TalonFX(ArmConstants.ARM_MASTER_ID, Constants.CANBUS_NAME);
     m_armFollower = new TalonFX(ArmConstants.ARM_FOLLOWER_ID, Constants.CANBUS_NAME);
@@ -135,6 +143,8 @@ public class ArmSubsystem extends SubsystemBase implements Logged {
         .addKG(ArmConstants.WRIST_KG, GravityTypeValue.Arm_Cosine)
         .addKS(ArmConstants.WRIST_KS)
         .build();
+
+    m_climberLock = climberLock;
 
     if (Utils.isSimulation()) {
       m_armMaster.getPosition().setUpdateFrequency(1000);
@@ -224,6 +234,13 @@ public class ArmSubsystem extends SubsystemBase implements Logged {
   }
 
   public void handleState() {
+    // handle climber lock
+    if (m_climberLock.getAsBoolean()) {
+      if (m_desiredState != ArmState.STOW) {
+        m_desiredState = ArmState.STOW;
+      }
+    }
+
     switch (m_desiredState) {
       case STOW -> {
         // reset setpoints to be at stow
