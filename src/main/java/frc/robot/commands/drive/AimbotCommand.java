@@ -75,7 +75,7 @@ public class AimbotCommand extends Command implements Logged {
     m_shooter.setShooterVelocities(
             AimbotUtils.getLeftSpeed(),
             AimbotUtils.getRightSpeed()
-    );
+    ).execute();
     m_shooter.runKicker(m_runKicker);
 
     // set arm
