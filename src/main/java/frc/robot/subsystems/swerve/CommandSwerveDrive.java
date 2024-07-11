@@ -26,6 +26,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Subsystem;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.generated.TunerConstants;
+import frc.robot.subsystems.vision.AprilTagCameraInterface;
 import monologue.Logged;
 
 /**
@@ -159,6 +160,14 @@ public class CommandSwerveDrive extends SwerveDrivetrain implements Subsystem, L
       updateSimState(deltaTime, RobotController.getBatteryVoltage());
     });
     m_simNotifier.startPeriodic(SIM_LOOP_PERIOD);
+  }
+
+  public void addVisionMeasurement(AprilTagCameraInterface.AprilTagResult measurement) {
+    addVisionMeasurement(
+            measurement.estimatedPose(),
+            measurement.timestamp(),
+            measurement.standardDeviations()
+    );
   }
 
   @Override

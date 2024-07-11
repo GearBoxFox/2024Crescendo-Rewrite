@@ -4,6 +4,7 @@ import com.gos.lib.properties.GosDoubleProperty;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.util.Units;
 import frc.robot.subsystems.arm.ArmPose;
 import lib.utils.ArmTrajectory;
@@ -78,6 +79,46 @@ public class Constants {
 
     public static final double ARM_LENGTH_METERS = Units.inchesToMeters(22.01);
     public static final double WRIST_LENGTH_METERS = Units.inchesToMeters(14.5);
+  }
+
+  public static class CameraConstants {
+    private CameraConstants() {};
+
+    public static final String LEFT_CAMERA_NAME = "LeftCamera";
+    public static final String RIGHT_CAMERA_NAME = "RightCamera";
+
+    public static final Transform3d LEFT_CAMERA_TRANSFORMATION = new Transform3d(
+            new Translation3d(
+                    Units.inchesToMeters(11.0351 + 1.25), // 11.0351
+                    Units.inchesToMeters(10.023204 - 2.0), // 10.023204
+                    Units.inchesToMeters(7.1374 - 2.0)), // 4.1374
+            new Rotation3d(
+                    Units.degreesToRadians(0.0 + 0.5),
+                    Units.degreesToRadians(-30.0 + 0.75), // -120.0 + 91.0
+                    Units.degreesToRadians(-14.7 + 6.0)) // 165.3224 + 180
+    );
+
+    public static final Transform3d RIGHT_CAMERA_TRANSFORMATION = new Transform3d(
+            new Translation3d(
+                    Units.inchesToMeters(11.0351 - 1.25), //11.0351
+                    Units.inchesToMeters(-10.023204 - 3.5), //-10.023204
+                    Units.inchesToMeters(7.1374 - 2.0)), // 7.1374
+            new Rotation3d(
+                    Units.degreesToRadians(0.0),
+                    Units.degreesToRadians(-30.0 - 1.5), // -30.0 - 1
+                    Units.degreesToRadians(14.7 - 11.0)) // 165.3224)
+    );
+
+    public static final Transform3d INTAKE_CAMERA_TRANSFORMATION = new Transform3d(
+            new Translation3d(
+                    Units.inchesToMeters(-16.5), //11.0351
+                    Units.inchesToMeters(-9.25), //-10.023204
+                    Units.inchesToMeters(10.0)), // 7.1374
+            new Rotation3d(
+                    Units.degreesToRadians(0.0),
+                    Units.degreesToRadians(-3.0), // -30.0 - 1
+                    Units.degreesToRadians(180.0)) // 165.3224)
+    );
   }
 
   public static class ShooterConstants {
