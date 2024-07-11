@@ -10,6 +10,7 @@ import java.util.Optional;
 public interface AprilTagCameraInterface {
   record AprilTagResult (
           Pose2d estimatedPose,
+          double timestamp,
           Matrix<N3, N1> standardDeviations
   ) {}
 

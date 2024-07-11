@@ -12,27 +12,34 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.commands.drive.PointAtPoseRequest;
 import frc.robot.generated.TunerConstants;
-import frc.robot.subsystems.arm.ArmSimWrapper;
 import frc.robot.subsystems.swerve.CommandSwerveDrive;
 import frc.robot.subsystems.arm.ArmSubsystem;
 import frc.robot.subsystems.swerve.Telemetry;
+import frc.robot.subsystems.vision.AprilTagCameraInterface;
+import frc.robot.subsystems.vision.PhotonAprilTagCamera;
 import lib.utils.AimbotUtils;
-import frc.robot.subsystems.CommandSwerveDrive;
 import frc.robot.subsystems.shooter.ShooterSubsystem;
 import lib.utils.FieldConstants;
 import monologue.Logged;
+import frc.robot.Constants.CameraConstants;
+
+import java.util.Optional;
 
 
 public class RobotContainer implements Logged {
   private double m_maxSpeed = TunerConstants.kSpeedAt12VoltsMps; // kSpeedAt12VoltsMps desired top speed
   private double m_maxAngularRate = 1.5 * Math.PI; // 3/4 of a rotation per second max angular velocity
 
-    // subsystems
-    private final CommandSwerveDrive m_drive = TunerConstants.DriveTrain;
-    private final ShooterSubsystem m_shooter = new ShooterSubsystem();
   // subsystems
   private final CommandSwerveDrive m_drive = TunerConstants.DriveTrain;
+  private final ShooterSubsystem m_shooter = new ShooterSubsystem();
   private final ArmSubsystem m_arm = new ArmSubsystem();
+
+  // cameras
+  private final AprilTagCameraInterface[] m_cameras = new AprilTagCameraInterface[] {
+          new PhotonAprilTagCamera(CameraConstants.LEFT_CAMERA_NAME, CameraConstants.LEFT_CAMERA_TRANSFORMATION),
+          new PhotonAprilTagCamera(CameraConstants.RIGHT_CAMERA_NAME, CameraConstants.RIGHT_CAMERA_TRANSFORMATION),
+  };
 
   // driver controllers
   private final CommandXboxController m_driveController = new CommandXboxController(0);
@@ -80,5 +87,12 @@ public class RobotContainer implements Logged {
     
     public Command getAutonomousCommand() {
         return Commands.print("No autonomous command configured");
+    }
+
+    public void updateCameras() {
+      for (AprilTagCameraInterface camera : m_cameras) {
+        Optional<AprilTagCameraInterface.AprilTagResult> result = camera.getLatestResult(m_drive.getState().Pose);
+        result.ifPresent(m_drive::addVisionMeasurement);
+      }
     }
 }

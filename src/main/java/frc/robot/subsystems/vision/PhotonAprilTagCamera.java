@@ -3,6 +3,7 @@ package frc.robot.subsystems.vision;
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
@@ -10,6 +11,7 @@ import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.RobotController;
 import lib.utils.FieldConstants;
+import monologue.Logged;
 import org.photonvision.EstimatedRobotPose;
 import org.photonvision.PhotonCamera;
 import org.photonvision.PhotonPoseEstimator;
@@ -19,7 +21,7 @@ import org.photonvision.targeting.PhotonPipelineResult;
 
 import java.util.Optional;
 
-public class PhotonAprilTagCamera implements AprilTagCameraInterface {
+public class PhotonAprilTagCamera implements AprilTagCameraInterface, Logged {
   private final PhotonCamera m_camera;
   private final PhotonPoseEstimator m_poseEstimator;
 
@@ -63,8 +65,11 @@ public class PhotonAprilTagCamera implements AprilTagCameraInterface {
       m_camSim.submitProcessedFrame(result);
     }
 
+    log("Estimated Pose", opPose.isPresent() ? opPose.get().estimatedPose : new Pose3d());
+
     return opPose.map(estimatedRobotPose -> new AprilTagResult(
             estimatedRobotPose.estimatedPose.toPose2d(),
+            estimatedRobotPose.timestampSeconds,
             getStandardDeviations(estimatedRobotPose)
     ));
   }

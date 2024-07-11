@@ -37,7 +37,7 @@ public class Robot extends TimedRobot implements Logged {
     public void robotPeriodic() {
         CommandScheduler.getInstance().run();
 
-        log("Blank Pose3d", new Pose3d[]{new Pose3d(), new Pose3d()});
+        robotContainer.updateCameras();
 
         Monologue.setFileOnly(DriverStation.isFMSAttached());
         Monologue.updateAll();
