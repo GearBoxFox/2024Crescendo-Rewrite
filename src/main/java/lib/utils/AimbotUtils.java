@@ -64,8 +64,8 @@ public class AimbotUtils {
   }
 
   /** Gets the angle the drivebase should be at with a default of the speaker */
-  public static Rotation2d getDrivebaseAimingAngle(Pose2d drivePose) {
-    return getDrivebaseAimingAngle(drivePose, FieldConstants.CENTER_SPEAKER);
+  public static Rotation2d getDrivebaseAimingAngle() {
+    return getDrivebaseAimingAngle(m_poseSupplier.get(), FieldConstants.CENTER_SPEAKER);
   }
 
   /** Gets the angle the drivebase should be at to aim at the speaker */

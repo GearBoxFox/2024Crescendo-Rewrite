@@ -390,6 +390,10 @@ public class ArmSubsystem extends SubsystemBase implements Logged {
             () -> m_desiredState = ArmState.TRAJECTORY_REVERSE);
   }
 
+  public Command setArmState(ArmState state) {
+    return runOnce(() -> m_desiredState = state);
+  }
+
   public Command enableBrakeModeFactory(boolean enabled) {
     return runOnce(() -> m_disabledBrakeMode = enabled).ignoringDisable(true);
   }

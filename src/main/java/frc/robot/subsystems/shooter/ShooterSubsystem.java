@@ -199,5 +199,14 @@ public class ShooterSubsystem extends SubsystemBase implements Logged {
     m_intake.getConfigurator().apply(config);
     m_indexer.getConfigurator().apply(config);
   }
+
+  public boolean atSetpoint() {
+    return Math.abs((m_leftShooter.getVelocity().getValueAsDouble() / 60.0) - leftRPMSetpoint) < 100.0
+            && Math.abs((m_rightShooter.getVelocity().getValueAsDouble() / 60.0) - rightRPMSetpoint) < 100.0;
+  }
+
+  public void runKicker(boolean runKicker) {
+    m_kicker.set(runKicker ? 0.9 : 0.0);
+  }
 }
 

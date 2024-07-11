@@ -10,7 +10,6 @@ import com.ctre.phoenix6.mechanisms.swerve.SwerveRequest;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
-import frc.robot.commands.drive.PointAtPoseRequest;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.swerve.CommandSwerveDrive;
 import frc.robot.subsystems.arm.ArmSubsystem;
@@ -50,9 +49,6 @@ public class RobotContainer implements Logged {
           .withSteerRequestType(SwerveModule.SteerRequestType.MotionMagicExpo)
           .withDriveRequestType(SwerveModule.DriveRequestType.OpenLoopVoltage);
 
-  private final PointAtPoseRequest m_aimbotRequest = new PointAtPoseRequest()
-          .withDeadband(m_maxSpeed * 0.1).withRotationalDeadband(m_maxAngularRate * 0.1)
-          .withTargetPose(FieldConstants.Speaker.CENTER_SPEAKER_OPENING);
   Telemetry swerveTelemetry = new Telemetry();
 
 
@@ -75,9 +71,6 @@ public class RobotContainer implements Logged {
     m_arm.setDefaultCommand(m_arm.defaultCommandFactory());
 
     m_driveController.a().whileTrue(m_drive.applyRequest(SwerveRequest.SwerveDriveBrake::new));
-    m_driveController.x().whileTrue(m_drive.applyRequest(() -> m_aimbotRequest
-            .withVelocityX(-m_driveController.getLeftY() * m_maxSpeed)
-            .withVelocityY(-m_driveController.getLeftX() * m_maxSpeed)));
 
         m_driveController.b().whileTrue(
             m_shooter.setShooterVelocities(3500, 3500)
