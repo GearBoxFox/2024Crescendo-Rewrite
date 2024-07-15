@@ -1,0 +1,68 @@
+package frc.robot.commands.auto;
+
+import edu.wpi.first.wpilibj.Timer;
+import edu.wpi.first.wpilibj2.command.Command;
+import frc.robot.Constants;
+import frc.robot.subsystems.arm.ArmSubsystem;
+import frc.robot.subsystems.shooter.ShooterSubsystem;
+
+
+public class IntakeControlCommand extends Command {
+  private final ArmSubsystem m_armSubsystem;
+  private final ShooterSubsystem m_shooterSubsystem;
+
+  private final Timer m_timer;
+  private final Timer m_reverseTimer;
+  private boolean hasPieceRising;
+
+  public IntakeControlCommand(ArmSubsystem armSubsystem, ShooterSubsystem shooterSubsystem) {
+    m_armSubsystem = armSubsystem;
+    m_shooterSubsystem = shooterSubsystem;
+    m_timer = new Timer();
+    m_reverseTimer = new Timer();
+    // each subsystem used by the command must be passed into the
+    // addRequirements() method (which takes a vararg of Subsystem)
+    addRequirements(m_armSubsystem, m_shooterSubsystem);
+  }
+
+  @Override
+  public void initialize() {
+    hasPieceRising = false;
+    m_timer.reset();
+    m_reverseTimer.reset();
+  }
+
+  @Override
+  public void execute() {
+    if(!m_shooterSubsystem.hasGamePiece() && !hasPieceRising) {
+      // run intake and kicker wheels in
+      m_shooterSubsystem.setIntakePower(0.9);
+      m_shooterSubsystem.setKickerPower(0.25);
+      m_shooterSubsystem.setShooterPowers(-0.1, -0.1);
+      m_armSubsystem.setArmSetpoint(Constants.ArmSetpoints.INTAKE_SETPOINT);
+    } else if (m_shooterSubsystem.hasGamePiece() && !m_reverseTimer.hasElapsed(0.1)){
+      m_armSubsystem.stowFactory().execute();
+      m_shooterSubsystem.setIntakePower(0.0);
+      m_shooterSubsystem.setKickerPower(-0.12);
+      m_shooterSubsystem.setShooterPowers(0.0, 0.0);
+    }
+
+    if (m_shooterSubsystem.hasGamePiece()
+            && !m_timer.hasElapsed(0.00000001)) {
+      m_timer.restart();
+    }
+  }
+
+  @Override
+  public boolean isFinished() {
+    return m_shooterSubsystem.hasGamePiece() && m_timer.hasElapsed(0.2);
+  }
+
+  @Override
+  public void end(boolean interrupted) {
+    m_shooterSubsystem.setIntakePower(0.0);
+    m_shooterSubsystem.setKickerPower(0.0);
+    m_shooterSubsystem.setShooterPowers(0.0, 0.0);
+    m_armSubsystem.stowFactory().execute();
+  }
+}

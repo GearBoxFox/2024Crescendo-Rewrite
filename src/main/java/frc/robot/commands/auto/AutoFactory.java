@@ -1,0 +1,67 @@
+package frc.robot.commands.auto;
+
+import com.pathplanner.lib.auto.AutoBuilder;
+import com.pathplanner.lib.auto.NamedCommands;
+import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
+import edu.wpi.first.wpilibj2.command.Command;
+import frc.robot.subsystems.arm.ArmSubsystem;
+import frc.robot.subsystems.shooter.ShooterSubsystem;
+import frc.robot.subsystems.swerve.CommandSwerveDrive;
+
+import java.util.HashMap;
+
+public class AutoFactory {
+  public enum AutoModes {
+    FRONT_WING_1("FrontWing1"),
+    FRONT_WING_2("FrontWing2"),
+    FRONT_WING_3("FrontWing3"),
+    FRONT_WING_3_CONTESTED_5("FrontWing3Contested5"),
+    AMP_PRELOAD_MOBILITY("AmpPreloadMobility"),
+    AMP_WING_3("AmpWing3"),
+    AMP_WING_3_CONTESTED_4("AmpWing3Contested4"),
+    AMP_WING_3_CONTESTED_5("AmpWing3Contested5"),
+    AMP_WING_3_2_1("AmpWing321"),
+    SOURCE_PRELOAD_MOBILITY("SourcePreloadMobility"),
+    SOURCE_WING_1("SourceWing1"),
+    SOURCE_CONTESTED_1("SourceContested1"),
+    SOURCE_CONTESTED_1_2("SourceContested12"),
+    SOURCE_WING_1_CONTESTED_1("SourceWing1Contested1");
+
+    public final String m_modeName;
+
+    AutoModes(String modeName) {
+      m_modeName = modeName;
+    }
+  }
+
+  private static final AutoModes DEFAULT_MODE = AutoModes.FRONT_WING_1;
+
+  private final SendableChooser<AutoModes> m_autonChooser;
+  private final HashMap<AutoModes, Command> m_modes;
+
+  public AutoFactory() {
+    m_autonChooser = new SendableChooser<>();
+    m_modes = new HashMap<>();
+
+    for (AutoModes mode : AutoModes.values()) {
+      if (mode == DEFAULT_MODE) {
+        m_autonChooser.setDefaultOption(mode.m_modeName, mode);
+      } else {
+        m_autonChooser.addOption(mode.m_modeName, mode);
+      }
+
+      m_modes.put(mode, AutoBuilder.buildAuto(mode.m_modeName));
+    }
+  }
+
+  public Command getSelectedAutonomous() {
+    AutoModes mode = m_autonChooser.getSelected();
+    return m_modes.get(mode);
+  }
+
+  public void setNamedCommands(ShooterSubsystem shooter, ArmSubsystem arm, CommandSwerveDrive drivetrain) {
+    NamedCommands.registerCommand("Intake", new IntakeControlCommand(arm, shooter));
+    NamedCommands.registerCommand("SpinupShooter", shooter.runVelocity(false));
+    NamedCommands.registerCommand("AimAndShoot", new ShooterAutoCommand(arm, shooter, drivetrain));
+  }
+}

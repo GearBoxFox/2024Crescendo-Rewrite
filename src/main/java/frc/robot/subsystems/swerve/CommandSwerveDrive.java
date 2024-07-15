@@ -16,6 +16,7 @@ import com.pathplanner.lib.util.HolonomicPathFollowerConfig;
 import com.pathplanner.lib.util.PIDConstants;
 import com.pathplanner.lib.util.ReplanningConfig;
 
+import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.wpilibj.DriverStation;
@@ -50,6 +51,9 @@ public class CommandSwerveDrive extends SwerveDrivetrain implements Subsystem, L
   private final SwerveRequest.SysIdSwerveTranslation TranslationCharacterization = new SwerveRequest.SysIdSwerveTranslation();
   private final SwerveRequest.SysIdSwerveRotation RotationCharacterization = new SwerveRequest.SysIdSwerveRotation();
   private final SwerveRequest.SysIdSwerveSteerGains SteerCharacterization = new SwerveRequest.SysIdSwerveSteerGains();
+
+  // use this PID controller to match heading
+  private final PIDController m_headingController;
 
   /* Use one of these sysidroutines for your particular test */
   private final SysIdRoutine m_sysIdRoutineTranslation = new SysIdRoutine(
@@ -93,6 +97,9 @@ public class CommandSwerveDrive extends SwerveDrivetrain implements Subsystem, L
     if (Utils.isSimulation()) {
       startSimThread();
     }
+
+    m_headingController = new PIDController(0.1, 0.0, 0.002);
+    m_headingController.setTolerance(7.5); // degrees
   }
 
   public CommandSwerveDrive(SwerveDrivetrainConstants driveTrainConstants, SwerveModuleConstants... modules) {
@@ -101,6 +108,9 @@ public class CommandSwerveDrive extends SwerveDrivetrain implements Subsystem, L
     if (Utils.isSimulation()) {
       startSimThread();
     }
+
+    m_headingController = new PIDController(0.1, 0.0, 0.002);
+    m_headingController.setTolerance(7.5); // degrees
   }
 
   private void configurePathPlanner() {
@@ -185,5 +195,13 @@ public class CommandSwerveDrive extends SwerveDrivetrain implements Subsystem, L
         hasAppliedOperatorPerspective = true;
       });
     }
+  }
+
+  public double alignToAngle(double desiredAngleDegrees) {
+    return m_headingController.calculate(getState().Pose.getRotation().getDegrees(), desiredAngleDegrees);
+  }
+
+  public boolean atHeadingSetpoint() {
+    return m_headingController.atSetpoint();
   }
 }

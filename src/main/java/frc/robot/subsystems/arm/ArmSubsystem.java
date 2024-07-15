@@ -398,6 +398,14 @@ public class ArmSubsystem extends SubsystemBase implements Logged {
     return runOnce(() -> m_disabledBrakeMode = enabled).ignoringDisable(true);
   }
 
+  public boolean wristAtSetpoint() {
+    return Math.abs(m_desiredWristPoseDegs - m_wristPoseDegs) < 5.0;
+  }
+
+  public boolean armAtSetpoint() {
+    return Math.abs(m_desiredArmPoseDegs - m_armPoseDegs) < 5.0;
+  }
+
   @Override
   public void simulationPeriodic() {
     m_armSim.setInputVoltage(m_armSimState.getMotorVoltage());

@@ -24,7 +24,7 @@ public class AimbotCommand extends Command implements Logged {
   private final ShooterSubsystem m_shooter;
   private final CommandXboxController m_driveController;
 
-  private final PIDController m_headingController;
+
   private final boolean m_runKicker;
 
   private final SwerveRequest.FieldCentric m_driveRequest = new SwerveRequest.FieldCentric()
@@ -43,8 +43,6 @@ public class AimbotCommand extends Command implements Logged {
     this.m_driveController = driveController;
     this.m_runKicker = runKicker;
 
-    m_headingController = new PIDController(0.1, 0.0, 0.002);
-    m_headingController.setTolerance(7.5); // degrees
     // each subsystem used by the command must be passed into the
     // addRequirements() method (which takes a vararg of Subsystem)
     addRequirements(this.m_arm, this.m_drive, this.m_shooter);
@@ -60,8 +58,7 @@ public class AimbotCommand extends Command implements Logged {
     driveY = MathUtil.applyDeadband(driveY, 0.1);
 
     // find the heading output
-    double headingOutput = m_headingController.calculate(
-            m_drive.getState().Pose.getRotation().getDegrees(),
+    double headingOutput = m_drive.alignToAngle(
             AimbotUtils.getDrivebaseAimingAngle().getDegrees()
     );
 
@@ -76,14 +73,14 @@ public class AimbotCommand extends Command implements Logged {
             AimbotUtils.getLeftSpeed(),
             AimbotUtils.getRightSpeed()
     ).execute();
-    m_shooter.runKicker(m_runKicker);
+    m_shooter.setKickerPower(0.95);
 
     // set arm
     m_arm.setArmState(ArmSubsystem.ArmState.AIMBOT).execute();
 
     log("Shooter at speed", m_shooter.atSetpoint());
     log("Arm at setpoint", m_arm.atSetpoint());
-    log("Drivebase at setpoint", m_headingController.atSetpoint());
+    log("Drivebase at setpoint", m_drive.atHeadingSetpoint());
 
   }
 

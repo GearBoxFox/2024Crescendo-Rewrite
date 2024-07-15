@@ -10,17 +10,17 @@ import com.ctre.phoenix6.mechanisms.swerve.SwerveRequest;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
+import frc.robot.Constants.CameraConstants;
+import frc.robot.commands.auto.AutoFactory;
 import frc.robot.generated.TunerConstants;
-import frc.robot.subsystems.swerve.CommandSwerveDrive;
 import frc.robot.subsystems.arm.ArmSubsystem;
+import frc.robot.subsystems.shooter.ShooterSubsystem;
+import frc.robot.subsystems.swerve.CommandSwerveDrive;
 import frc.robot.subsystems.swerve.Telemetry;
 import frc.robot.subsystems.vision.AprilTagCameraInterface;
 import frc.robot.subsystems.vision.PhotonAprilTagCamera;
 import lib.utils.AimbotUtils;
-import frc.robot.subsystems.shooter.ShooterSubsystem;
-import lib.utils.FieldConstants;
 import monologue.Logged;
-import frc.robot.Constants.CameraConstants;
 
 import java.util.Optional;
 
@@ -51,10 +51,14 @@ public class RobotContainer implements Logged {
 
   Telemetry swerveTelemetry = new Telemetry();
 
+  AutoFactory autoFactory = new AutoFactory();
+
 
   public RobotContainer() {
     AimbotUtils.setPoseSupplier(() -> m_drive.getState().Pose);
     m_drive.registerTelemetry(swerveTelemetry::telemeterize);
+
+    autoFactory.setNamedCommands(m_shooter, m_arm, m_drive);
 
     configureBindings();
   }
@@ -79,7 +83,7 @@ public class RobotContainer implements Logged {
     
     
     public Command getAutonomousCommand() {
-        return Commands.print("No autonomous command configured");
+        return autoFactory.getSelectedAutonomous();
     }
 
     public void updateCameras() {

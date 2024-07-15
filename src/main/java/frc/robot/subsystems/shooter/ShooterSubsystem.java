@@ -1,9 +1,7 @@
 package frc.robot.subsystems.shooter;
 
 
-import com.ctre.phoenix6.configs.MotorOutputConfigs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
-import com.ctre.phoenix6.controls.NeutralOut;
 import com.ctre.phoenix6.controls.VelocityVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.InvertedValue;
@@ -20,10 +18,9 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 import frc.robot.Constants.ShooterConstants;
-import frc.robot.Robot;
-import frc.robot.RobotContainer;
 import lib.properties.phoenix6.Phoenix6PidPropertyBuilder;
 import lib.properties.phoenix6.PidPropertyPublic;
+import lib.utils.AimbotUtils;
 import monologue.Annotations;
 import monologue.Logged;
 
@@ -101,50 +98,67 @@ public class ShooterSubsystem extends SubsystemBase implements Logged {
 
   public Command setShooterVelocities(double leftRPM, double rightRPM) {
     return runEnd(() -> {
-          leftRPMSetpoint = leftRPM;
-          rightRPMSetpoint = rightRPM;
-          var control = new VelocityVoltage(0.0)
-              .withSlot(0);
-          m_leftShooter.setControl(control.withVelocity(leftRPM / 60.0));
-          m_rightShooter.setControl(control.withVelocity(rightRPM / 60.0));
-        },
-        () -> {
-          leftRPMSetpoint = 0.0;
-          rightRPMSetpoint = 0.0;
-          m_leftShooter.set(0.0);
-          m_rightShooter.set(0.0);
-        });
+              leftRPMSetpoint = leftRPM;
+              rightRPMSetpoint = rightRPM;
+              var control = new VelocityVoltage(0.0)
+                      .withSlot(0);
+              m_leftShooter.setControl(control.withVelocity(leftRPM / 60.0));
+              m_rightShooter.setControl(control.withVelocity(rightRPM / 60.0));
+            },
+            () -> {
+              leftRPMSetpoint = 0.0;
+              rightRPMSetpoint = 0.0;
+              m_leftShooter.set(0.0);
+              m_rightShooter.set(0.0);
+            });
+  }
+
+  public Command runVelocity(boolean runKicker) {
+    return runEnd(() -> {
+              setShooterVelocities(
+                      AimbotUtils.getLeftSpeed(),
+                      AimbotUtils.getRightSpeed()
+              ).execute();
+
+              if (runKicker) {
+                setKickerPower(0.95);
+              }
+            },
+            () -> {
+              setShooterVelocities(0.0, 0.0).execute();
+              setKickerPower(0.0);
+            });
   }
 
   public Command intakeCommand(double intakePower, double kickerPower, double timeout) {
     Timer timer = new Timer();
     return runEnd(() -> {
-          if (!hasGamePiece()) {
-            // if no game piece, intake normally
-            m_leftShooter.set(-0.1);
-            m_rightShooter.set(-0.1);
-            m_intake.set(intakePower);
-            m_kicker.set(kickerPower);
-            timer.restart();
-          } else if (!timer.hasElapsed(timeout)) {
-            // when we have a game piece, run backwards for so long
-            m_kicker.set(-0.15);
-            m_intake.set(0.0);
-          } else {
-            // stop when finished
-            m_leftShooter.set(0.0);
-            m_rightShooter.set(0.0);
-            m_kicker.set(0.0);
-            m_intake.set(0.0);
-          }
-        },
-        () -> {
-          // stop when finished
-          m_intake.set(0.0);
-          m_kicker.set(0.0);
-          m_leftShooter.set(0.0);
-          m_rightShooter.set(0.0);
-        });
+              if (!hasGamePiece()) {
+                // if no game piece, intake normally
+                m_leftShooter.set(-0.1);
+                m_rightShooter.set(-0.1);
+                m_intake.set(intakePower);
+                m_kicker.set(kickerPower);
+                timer.restart();
+              } else if (!timer.hasElapsed(timeout)) {
+                // when we have a game piece, run backwards for so long
+                m_kicker.set(-0.15);
+                m_intake.set(0.0);
+              } else {
+                // stop when finished
+                m_leftShooter.set(0.0);
+                m_rightShooter.set(0.0);
+                m_kicker.set(0.0);
+                m_intake.set(0.0);
+              }
+            },
+            () -> {
+              // stop when finished
+              m_intake.set(0.0);
+              m_kicker.set(0.0);
+              m_leftShooter.set(0.0);
+              m_rightShooter.set(0.0);
+            });
   }
 
   public boolean hasGamePiece() {
@@ -205,8 +219,21 @@ public class ShooterSubsystem extends SubsystemBase implements Logged {
             && Math.abs((m_rightShooter.getVelocity().getValueAsDouble() / 60.0) - rightRPMSetpoint) < 100.0;
   }
 
-  public void runKicker(boolean runKicker) {
-    m_kicker.set(runKicker ? 0.9 : 0.0);
+  public void setKickerPower(double speed) {
+    m_kicker.set(speed);
+  }
+
+  public void setIntakePower(double speed) {
+    m_intake.set(speed);
+  }
+
+  public void setIndexerPower(double speed) {
+    m_indexer.set(speed);
+  }
+
+  public void setShooterPowers(double left, double right) {
+    m_leftShooter.set(left);
+    m_rightShooter.set(right);
   }
 }
 
