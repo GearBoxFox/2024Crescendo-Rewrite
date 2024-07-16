@@ -31,14 +31,14 @@ public class RobotContainer implements Logged {
 
   // subsystems
   private final CommandSwerveDrive m_drive = TunerConstants.DriveTrain;
-  private final ShooterSubsystem m_shooter = new ShooterSubsystem();
-  private final ArmSubsystem m_arm = new ArmSubsystem();
+//  private final ShooterSubsystem m_shooter = new ShooterSubsystem();
+//  private final ArmSubsystem m_arm = new ArmSubsystem();
 
   // cameras
-  private final AprilTagCameraInterface[] m_cameras = new AprilTagCameraInterface[] {
-          new PhotonAprilTagCamera(CameraConstants.LEFT_CAMERA_NAME, CameraConstants.LEFT_CAMERA_TRANSFORMATION),
-          new PhotonAprilTagCamera(CameraConstants.RIGHT_CAMERA_NAME, CameraConstants.RIGHT_CAMERA_TRANSFORMATION),
-  };
+//  private final AprilTagCameraInterface[] m_cameras = new AprilTagCameraInterface[] {
+//          new PhotonAprilTagCamera(CameraConstants.LEFT_CAMERA_NAME, CameraConstants.LEFT_CAMERA_TRANSFORMATION),
+//          new PhotonAprilTagCamera(CameraConstants.RIGHT_CAMERA_NAME, CameraConstants.RIGHT_CAMERA_TRANSFORMATION),
+//  };
 
   // driver controllers
   private final CommandXboxController m_driveController = new CommandXboxController(0);
@@ -68,13 +68,13 @@ public class RobotContainer implements Logged {
                     .withRotationalRate(-m_driveController.getRightX() * m_maxAngularRate)
             ).ignoringDisable(true));
 
-    m_arm.setDefaultCommand(m_arm.defaultCommandFactory());
+//    m_arm.setDefaultCommand(m_arm.defaultCommandFactory());
 
     m_driveController.a().whileTrue(m_drive.applyRequest(SwerveRequest.SwerveDriveBrake::new));
 
-        m_driveController.b().whileTrue(
-            m_shooter.setShooterVelocities(3500, 3500)
-        );
+//        m_driveController.b().whileTrue(
+//            m_shooter.setShooterVelocities(3500, 3500)
+//        );
     }
     
     
@@ -83,9 +83,9 @@ public class RobotContainer implements Logged {
     }
 
     public void updateCameras() {
-      for (AprilTagCameraInterface camera : m_cameras) {
-        Optional<AprilTagCameraInterface.AprilTagResult> result = camera.getLatestResult(m_drive.getState().Pose);
-        result.ifPresent(m_drive::addVisionMeasurement);
-      }
+//      for (AprilTagCameraInterface camera : m_cameras) {
+//        Optional<AprilTagCameraInterface.AprilTagResult> result = camera.getLatestResult(m_drive.getState().Pose);
+//        result.ifPresent(m_drive::addVisionMeasurement);
+//      }
     }
 }
