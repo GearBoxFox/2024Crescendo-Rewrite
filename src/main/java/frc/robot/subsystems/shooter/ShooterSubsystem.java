@@ -86,7 +86,7 @@ public class ShooterSubsystem extends SubsystemBase implements Logged {
         .addP(ShooterConstants.SHOOTER_KP)
         .addD(ShooterConstants.SHOOTER_KD)
         .addKS(ShooterConstants.SHOOTER_KS)
-        .addKV(ShooterConstants.SHOOTER_KV)
+        .addKV(ShooterConstants.SHOOTER_KV + ShooterConstants.RIGHT_SHOOTER_NUDGE)
         .build();
 
     // setup flywheel sim
@@ -160,6 +160,8 @@ public class ShooterSubsystem extends SubsystemBase implements Logged {
     // Log new values
     log("Left Shooter RPM", m_leftShooter.getVelocity().getValueAsDouble() * 60.0);
     log("Right Shooter RPM", m_rightShooter.getVelocity().getValueAsDouble() * 60.0);
+    log("Left Motor RPS", m_leftShooter.getVelocity().getValueAsDouble());
+    log("Right Motor RPS", m_rightShooter.getVelocity().getValueAsDouble());
 
     log("Has game piece", hasGamePiece());
   }
@@ -207,6 +209,17 @@ public class ShooterSubsystem extends SubsystemBase implements Logged {
 
   public void runKicker(boolean runKicker) {
     m_kicker.set(runKicker ? 0.9 : 0.0);
+  }
+
+  public Command runShooter(double volts) {
+    return runEnd(() -> {
+          m_leftShooter.setVoltage(volts);
+          m_rightShooter.setVoltage(volts);
+        },
+        () -> {
+          m_leftShooter.setVoltage(0.0);
+          m_rightShooter.setVoltage(0.0);
+        });
   }
 }
 

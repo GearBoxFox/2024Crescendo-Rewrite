@@ -31,7 +31,7 @@ public class RobotContainer implements Logged {
 
   // subsystems
   private final CommandSwerveDrive m_drive = TunerConstants.DriveTrain;
-//  private final ShooterSubsystem m_shooter = new ShooterSubsystem();
+  private final ShooterSubsystem m_shooter = new ShooterSubsystem();
 //  private final ArmSubsystem m_arm = new ArmSubsystem();
 
   // cameras
@@ -45,7 +45,7 @@ public class RobotContainer implements Logged {
 
   // requests for swerve drive
   private final SwerveRequest.FieldCentric m_driveRequest = new SwerveRequest.FieldCentric()
-          .withDeadband(m_maxSpeed * 0.1).withRotationalDeadband(m_maxAngularRate * 0.1)
+          .withDeadband(0.0).withRotationalDeadband(0.0)
           .withSteerRequestType(SwerveModule.SteerRequestType.MotionMagicExpo)
           .withDriveRequestType(SwerveModule.DriveRequestType.OpenLoopVoltage);
 
@@ -71,10 +71,12 @@ public class RobotContainer implements Logged {
 //    m_arm.setDefaultCommand(m_arm.defaultCommandFactory());
 
     m_driveController.a().whileTrue(m_drive.applyRequest(SwerveRequest.SwerveDriveBrake::new));
+    m_driveController.x().whileTrue(m_shooter.runShooter(8.0));
+    m_driveController.y().whileTrue(m_shooter.runShooter(6.0));
 
-//        m_driveController.b().whileTrue(
-//            m_shooter.setShooterVelocities(3500, 3500)
-//        );
+        m_driveController.b().whileTrue(
+            m_shooter.setShooterVelocities(4250,4250)
+        );
     }
     
     
