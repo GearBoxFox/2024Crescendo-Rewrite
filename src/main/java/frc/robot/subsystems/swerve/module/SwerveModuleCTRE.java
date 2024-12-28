@@ -80,6 +80,10 @@ public class SwerveModuleCTRE {
     driveMotor.setControl(driveControl.withVelocity(rps));
   }
 
+  public int getModuleId() {
+    return moduleId;
+  }
+
   public SwerveModuleState getModuleState() {
     return new SwerveModuleState(
         driveVelocitySignal.getValueAsDouble() * TunerConstants.kWheelCircumferenceMeters,
