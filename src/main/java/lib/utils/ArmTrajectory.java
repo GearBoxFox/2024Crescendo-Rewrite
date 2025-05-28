@@ -121,32 +121,34 @@ public class ArmTrajectory {
     return new ArmTrajectoryState(newWristPosition, newWristVelocity, newArmPosition, newArmVelocity);
   }
 
-//  public static ArmTrajectory generate(ArmPose... poses) {
-//    /*
-//    * Generate a trajectory given a list of arm poses for each setpoint.
-//    *
-//    * Assumes max velocity for each joint in intermediate setpoints unless the joint location is the same
-//    */
-//
-//    ArmTrajectory traj;
-//
-//    double armMaxAccel = ArmConstants.ARM_MAX_VELOCITY_DEG_S.getValue() * ArmConstants.MAX_ACCEL_S.getValue();
-//    double wristMaxAccel = ArmConstants.ARM_MAX_VELOCITY_DEG_S.getValue() * ArmConstants.MAX_ACCEL_S.getValue();
-//
-//    for (int i = 0; i < poses.length - 1; i++) {
-//      ArmPose currentPose = poses[i];
-//      ArmPose nextPose = poses[i + 1];
-//
-//      double armDelta = Math.copySign(nextPose.armAngle() - currentPose.armAngle(), 1.0);
-//      double wristDelta = Math.copySign(nextPose.wristAngle() - currentPose.wristAngle(), 1.0);
-//
-//      // find the time each join must take to travel
-//      //arm
-//      double armAccelTime = ArmConstants.ARM_MAX_VELOCITY_DEG_S.getValue() / armMaxAccel;
-//      double armAccelDistance = (1.0 / 2.0) * armMaxAccel * Math.pow(armAccelTime, 2);
-//
-//    }
-//  }
+  public static ArmTrajectory generate(ArmPose... poses) {
+    /*
+    * Generate a trajectory given a list of arm poses for each setpoint.
+    *
+    * Assumes max velocity for each joint in intermediate setpoints unless the joint location is the same
+    */
+
+    ArmTrajectory traj;
+
+    double armMaxAccel = ArmConstants.ARM_MAX_VELOCITY_DEG_S.getValue() * ArmConstants.MAX_ACCEL_S.getValue();
+    double wristMaxAccel = ArmConstants.ARM_MAX_VELOCITY_DEG_S.getValue() * ArmConstants.MAX_ACCEL_S.getValue();
+
+    for (int i = 0; i < poses.length - 1; i++) {
+      ArmPose currentPose = poses[i];
+      ArmPose nextPose = poses[i + 1];
+
+      double armDelta = Math.copySign(nextPose.armAngle() - currentPose.armAngle(), 1.0);
+      double wristDelta = Math.copySign(nextPose.wristAngle() - currentPose.wristAngle(), 1.0);
+
+      // find the time each join must take to travel
+      //arm
+      double armAccelTime = ArmConstants.ARM_MAX_VELOCITY_DEG_S.getValue() / armMaxAccel;
+      double armAccelDistance = (1.0 / 2.0) * armMaxAccel * Math.pow(armAccelTime, 2);
+
+      // if we move over halfway while accelerating,
+
+    }
+  }
 
   public static ArmTrajectory fromCoeffs(SimpleMatrix coeffs, double t_0, double t_f) {
     /*
