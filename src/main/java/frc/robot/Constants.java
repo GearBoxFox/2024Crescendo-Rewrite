@@ -196,5 +196,11 @@ public class Constants {
             0.0,
             0.5
     ));
+
+    public static final ArmTrajectory AMP_TRAJECTORY_NEW = ArmTrajectory.generate(
+        start,
+        middle,
+        end
+    );
   }
 }

@@ -144,10 +144,7 @@ public class ArmSubsystem extends SubsystemBase implements Logged {
       m_wristSimState = m_wristMaster.getSimState();
 
       m_armSimState.Orientation = ChassisReference.Clockwise_Positive;
-      m_wristSimState.Orientation = ChassisReference.CounterClockwise_Positive;
-
-      m_armSimState.setSupplyVoltage(RobotController.getBatteryVoltage());
-      m_wristSimState.setSupplyVoltage(RobotController.getBatteryVoltage());
+      m_wristSimState.Orientation = ChassisReference.Clockwise_Positive;
 
       m_armSim = new SingleJointedArmSim(
               DCMotor.getKrakenX60Foc(2), ArmConstants.ARM_SENSOR_MECHANISM_RATIO, 0.0060620304,
@@ -160,6 +157,13 @@ public class ArmSubsystem extends SubsystemBase implements Logged {
 
   @Override
   public void periodic() {
+    m_armProperty.updateIfChanged();
+    m_wristProperty.updateIfChanged();
+
+    // check motor outputs
+    log("Wrist Applied Voltage", m_wristMaster.get()  * 12.0);
+    log("Arm Applied Voltage", m_armMaster.get()  * 12.0);
+
     // update global variables for arm + wrist pose
     m_armPoseDegs = Units.rotationsToDegrees(m_armMaster.getPosition().getValueAsDouble());
     m_wristPoseDegs = Units.rotationsToDegrees(m_wristMaster.getPosition().getValueAsDouble());
@@ -303,14 +307,10 @@ public class ArmSubsystem extends SubsystemBase implements Logged {
     if (m_desiredState != ArmState.TRAJECTORY) {
       // basic setpoints
       m_armMaster.setControl(m_mm
-          .withPosition(Units.degreesToRotations(m_desiredArmPoseDegs))
-          .withVelocity(Units.degreesToRotations(ArmConstants.ARM_MAX_VELOCITY_DEG_S.getValue()))
-          .withAcceleration(m_mm.Velocity * ArmConstants.MAX_ACCEL_S.getValue()));
+          .withPosition(Units.degreesToRotations(m_desiredArmPoseDegs)));
 
       m_wristMaster.setControl(m_mm
-          .withPosition(Units.degreesToRotations(m_desiredWristPoseDegs))
-          .withVelocity(Units.degreesToRotations(ArmConstants.ARM_MAX_VELOCITY_DEG_S.getValue()))
-          .withAcceleration(m_mm.Velocity * ArmConstants.MAX_ACCEL_S.getValue()));
+          .withPosition(Units.degreesToRotations(m_desiredWristPoseDegs)));
     } else {
       // following a trajectory
       m_armMaster.setControl(
@@ -400,6 +400,9 @@ public class ArmSubsystem extends SubsystemBase implements Logged {
 
   @Override
   public void simulationPeriodic() {
+    m_armSimState.setSupplyVoltage(RobotController.getBatteryVoltage());
+    m_wristSimState.setSupplyVoltage(RobotController.getBatteryVoltage());
+
     m_armSim.setInputVoltage(m_armSimState.getMotorVoltage());
     m_wristSim.setInputVoltage(m_wristSimState.getMotorVoltage());
 

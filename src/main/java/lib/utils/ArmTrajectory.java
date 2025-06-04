@@ -2,6 +2,8 @@ package lib.utils;
 
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.Matrix;
+import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.Constants.ArmConstants;
 import frc.robot.subsystems.arm.ArmPose;
 import org.ejml.simple.SimpleMatrix;
@@ -121,33 +123,104 @@ public class ArmTrajectory {
     return new ArmTrajectoryState(newWristPosition, newWristVelocity, newArmPosition, newArmVelocity);
   }
 
-  public static ArmTrajectory generate(ArmPose... poses) {
+  public static ArmTrajectory generate(ArmTrajectoryState... poses) {
     /*
     * Generate a trajectory given a list of arm poses for each setpoint.
     *
     * Assumes max velocity for each joint in intermediate setpoints unless the joint location is the same
     */
 
-    ArmTrajectory traj;
+    ArmTrajectory traj = null;
 
-    double armMaxAccel = ArmConstants.ARM_MAX_VELOCITY_DEG_S.getValue() * ArmConstants.MAX_ACCEL_S.getValue();
-    double wristMaxAccel = ArmConstants.ARM_MAX_VELOCITY_DEG_S.getValue() * ArmConstants.MAX_ACCEL_S.getValue();
+    double armMaxAccel = ArmConstants.ARM_MAX_VELOCITY_DEG_S.getValue() / ArmConstants.MAX_ACCEL_S.getValue();
+    double wristMaxAccel = ArmConstants.ARM_MAX_VELOCITY_DEG_S.getValue() / ArmConstants.MAX_ACCEL_S.getValue();
 
     for (int i = 0; i < poses.length - 1; i++) {
-      ArmPose currentPose = poses[i];
-      ArmPose nextPose = poses[i + 1];
+      ArmTrajectoryState currentPose = poses[i];
+      ArmTrajectoryState nextPose = poses[i + 1];
 
-      double armDelta = Math.copySign(nextPose.armAngle() - currentPose.armAngle(), 1.0);
-      double wristDelta = Math.copySign(nextPose.wristAngle() - currentPose.wristAngle(), 1.0);
+      double segmentTime = calcWaypointTime(currentPose, nextPose, armMaxAccel, wristMaxAccel);
 
-      // find the time each join must take to travel
-      //arm
-      double armAccelTime = ArmConstants.ARM_MAX_VELOCITY_DEG_S.getValue() / armMaxAccel;
-      double armAccelDistance = (1.0 / 2.0) * armMaxAccel * Math.pow(armAccelTime, 2);
+      DriverStation.reportWarning("Current Angle: " + currentPose.armPositionDegs +
+          "Desired Angle: " + nextPose.armPositionDegs +
+          "Max Acceleration: " + armMaxAccel +
+          "Delta Time: " + segmentTime, false);
 
-      // if we move over halfway while accelerating,
+      SmartDashboard.putNumber("Delta Time: ", segmentTime);
 
+      // make sure that the trajectory isn't null
+      if (traj != null) {
+        traj.append(
+            ArmTrajectory.fromCoeffs(
+                ArmTrajectory.cubic_interpolation(0.0, segmentTime, currentPose, nextPose),
+                0.0,
+                segmentTime
+            )
+        );
+      } else {
+        traj = ArmTrajectory.fromCoeffs(
+            ArmTrajectory.cubic_interpolation(0.0, segmentTime, currentPose, nextPose),
+            0.0,
+            segmentTime
+        );
+      }
     }
+
+    return traj;
+  }
+
+  private static double calcWaypointTime(ArmTrajectoryState i,
+                                         ArmTrajectoryState f,
+                                         double armMaxAccel,
+                                         double wristMaxAccel) {
+    double armDelta = Math.copySign(f.armPositionDegs - i.armPositionDegs, 1.0);
+    double wristDelta = Math.copySign(f.wristPositionDegs - i.wristPositionDegs, 1.0);
+
+    double armTotalTime = 0.0;
+    double wristTotalTime = 0.0;
+
+    // find the time each join must take to travel
+    //arm
+    double armAccelTime = (ArmConstants.ARM_MAX_VELOCITY_DEG_S.getValue() - i.armVelocityDegsPerSec) / armMaxAccel;
+    double armAccelDistance = (1.0 / 2.0) * armMaxAccel * Math.pow(armAccelTime, 2);
+
+    double armDecelTime = (f.armVelocityDegsPerSec - ArmConstants.ARM_MAX_VELOCITY_DEG_S.getValue()) / -armMaxAccel;
+    double armDecelDistance = (1.0 / 2.0) * armMaxAccel * Math.pow(armDecelTime, 2);
+
+    // we travel too far accelerating or decelerating so we can't accel/decel to max velocity
+    if ((armAccelDistance + armDecelDistance) > armDelta) {
+      // figure out the max distance we can accel and decel
+      // s = a/2 * t^2
+      // creates an equal triangle accel/decel curve
+      armTotalTime =  2 * Math.sqrt(armDelta / armMaxAccel);
+      SmartDashboard.putBoolean("Arm Edgecase", true);
+    } else {
+      double maxVelTime = ArmConstants.ARM_MAX_VELOCITY_DEG_S.getValue() / (armDelta - armAccelDistance - armDecelDistance);
+      armTotalTime =  maxVelTime + armAccelTime + armDecelTime;
+      SmartDashboard.putBoolean("Arm Edgecase", false);
+    }
+
+    // wrist
+    double wristAccelTime = (ArmConstants.WRIST_MAX_VELOCITY_DEG_S.getValue() - i.wristVelocityDegsPerSec) / wristMaxAccel;
+    double wristAccelDistance = (1.0 / 2.0) * wristMaxAccel * Math.pow(wristAccelTime, 2);
+
+    double wristDecelTime = (f.wristVelocityDegsPerSec - ArmConstants.WRIST_MAX_VELOCITY_DEG_S.getValue()) / -wristMaxAccel;
+    double wristDecelDistance = (1.0 / 2.0) * wristMaxAccel * Math.pow(wristDecelTime, 2);
+
+    // we travel too far accelerating or decelerating so we can't accel/decel to max velocity
+    if ((wristAccelDistance + wristDecelDistance) > wristDelta) {
+      // figure out the max distance we can accel and decel
+      // s = a/2 * t^2
+      // creates an equal triangle accel/decel curve
+      wristTotalTime =  2 * Math.sqrt(wristDelta / wristMaxAccel);
+      SmartDashboard.putBoolean("Wrist Edgecase", true);
+    } else {
+      double maxVelTime = ArmConstants.WRIST_MAX_VELOCITY_DEG_S.getValue() / (wristDelta - wristAccelDistance - wristDecelDistance);
+      wristTotalTime =  maxVelTime + wristAccelTime + wristDecelTime;
+      SmartDashboard.putBoolean("Wrist Edgecase", false);
+    }
+
+    return Math.max(armTotalTime, wristTotalTime);
   }
 
   public static ArmTrajectory fromCoeffs(SimpleMatrix coeffs, double t_0, double t_f) {
