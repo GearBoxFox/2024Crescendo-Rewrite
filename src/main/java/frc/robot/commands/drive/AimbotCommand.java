@@ -1,7 +1,6 @@
 package frc.robot.commands.drive;
 
-import com.ctre.phoenix6.mechanisms.swerve.SwerveModule;
-import com.ctre.phoenix6.mechanisms.swerve.SwerveRequest;
+import com.ctre.phoenix6.swerve.SwerveRequest;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.util.Units;
@@ -9,7 +8,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.arm.ArmSubsystem;
-import frc.robot.subsystems.swerve.CommandSwerveDrive;
+import frc.robot.subsystems.swerve.CommandSwerveDrivetrain;
 import frc.robot.subsystems.shooter.ShooterSubsystem;
 import lib.utils.AimbotUtils;
 import monologue.Logged;
@@ -20,7 +19,7 @@ public class AimbotCommand extends Command implements Logged {
   private final double m_maxAngularRate = 1.5 * Math.PI; // 3/4 of a rotation per second max angular velocity
 
   private final ArmSubsystem m_arm;
-  private final CommandSwerveDrive m_drive;
+  private final CommandSwerveDrivetrain m_drive;
   private final ShooterSubsystem m_shooter;
   private final CommandXboxController m_driveController;
 
@@ -28,12 +27,11 @@ public class AimbotCommand extends Command implements Logged {
   private final boolean m_runKicker;
 
   private final SwerveRequest.FieldCentric m_driveRequest = new SwerveRequest.FieldCentric()
-          .withDeadband(m_maxSpeed * 0.1).withRotationalDeadband(m_maxAngularRate * 0.1)
-          .withSteerRequestType(SwerveModule.SteerRequestType.MotionMagicExpo)
-          .withDriveRequestType(SwerveModule.DriveRequestType.OpenLoopVoltage);
+          .withDeadband(m_maxSpeed * 0.1)
+      .withRotationalDeadband(m_maxAngularRate * 0.1);
 
   public AimbotCommand(ArmSubsystem arm,
-                       CommandSwerveDrive drive,
+                       CommandSwerveDrivetrain drive,
                        ShooterSubsystem shooter,
                        CommandXboxController driveController,
                        boolean runKicker) {

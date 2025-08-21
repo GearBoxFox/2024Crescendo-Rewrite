@@ -5,14 +5,14 @@
 
 package frc.robot;
 
-import com.ctre.phoenix6.mechanisms.swerve.SwerveModule;
-import com.ctre.phoenix6.mechanisms.swerve.SwerveRequest;
+import com.ctre.phoenix6.swerve.SwerveModule;
+import com.ctre.phoenix6.swerve.SwerveRequest;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.arm.ArmPose;
-import frc.robot.subsystems.swerve.CommandSwerveDrive;
+import frc.robot.subsystems.swerve.CommandSwerveDrivetrain;
 import frc.robot.subsystems.arm.ArmSubsystem;
 import frc.robot.subsystems.swerve.Telemetry;
 import frc.robot.subsystems.vision.AprilTagCameraInterface;
@@ -31,7 +31,7 @@ public class RobotContainer implements Logged {
   private double m_maxAngularRate = 1.5 * Math.PI; // 3/4 of a rotation per second max angular velocity
 
   // subsystems
-  private final CommandSwerveDrive m_drive = TunerConstants.DriveTrain;
+  private final CommandSwerveDrivetrain m_drive = TunerConstants.createDrivetrain();
 //  private final ShooterSubsystem m_shooter = new ShooterSubsystem();
   private final ArmSubsystem m_arm = new ArmSubsystem();
 

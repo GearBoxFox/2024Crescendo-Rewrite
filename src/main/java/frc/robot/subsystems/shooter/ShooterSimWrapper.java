@@ -13,32 +13,32 @@ public class ShooterSimWrapper {
   private final TalonFXSimState m_leftSimState;
   private final TalonFXSimState m_rightSimState;
 
-  private final FlywheelSim m_leftSim;
-  private final FlywheelSim m_rightSim;
+//  private final FlywheelSim m_leftSim;
+//  private final FlywheelSim m_rightSim;
 
   public ShooterSimWrapper(TalonFX leftMotor, TalonFX rightMotor) {
     m_leftSimState = leftMotor.getSimState();
     m_rightSimState = rightMotor.getSimState();
 
-    m_leftSim = new FlywheelSim(DCMotor.getFalcon500(1), 1, 0.001);
-    m_rightSim = new FlywheelSim(DCMotor.getFalcon500(1), 1, 0.001);
+//    m_leftSim = new FlywheelSim(DCMotor.getFalcon500(1), 1, 0.001);
+//    m_rightSim = new FlywheelSim(DCMotor.getFalcon500(1), 1, 0.001);
   }
 
   public void update() {
     m_leftSimState.setSupplyVoltage(RobotController.getBatteryVoltage());
     m_rightSimState.setSupplyVoltage(RobotController.getBatteryVoltage());
 
-    m_leftSim.setInputVoltage(m_leftSimState.getMotorVoltage());
-    m_rightSim.setInputVoltage(m_rightSimState.getMotorVoltage());
+//    m_leftSim.setInputVoltage(m_leftSimState.getMotorVoltage());
+//    m_rightSim.setInputVoltage(m_rightSimState.getMotorVoltage());
 
-    m_leftSim.update(UPDATE_TIME); // assume 20ms sim loop time
-    m_rightSim.update(UPDATE_TIME);
+//    m_leftSim.update(UPDATE_TIME); // assume 20ms sim loop time
+//    m_rightSim.update(UPDATE_TIME);
 
-    m_leftSimState.setRotorVelocity(
-            Units.radiansToRotations(m_leftSim.getAngularVelocityRadPerSec())
-    );
-    m_rightSimState.setRotorVelocity(
-            Units.radiansToRotations(m_rightSim.getAngularVelocityRadPerSec())
-    );
+//    m_leftSimState.setRotorVelocity(
+//            Units.radiansToRotations(m_leftSim.getAngularVelocityRadPerSec())
+//    );
+//    m_rightSimState.setRotorVelocity(
+//            Units.radiansToRotations(m_rightSim.getAngularVelocityRadPerSec())
+//    );
   }
 }

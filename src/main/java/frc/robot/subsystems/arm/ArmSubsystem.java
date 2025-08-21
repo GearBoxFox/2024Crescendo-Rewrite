@@ -439,12 +439,12 @@ public class ArmSubsystem extends SubsystemBase implements Logged {
 
     // Encoder Configuration
     CANcoderConfiguration armEncoderConfig = new CANcoderConfiguration();
-    armEncoderConfig.MagnetSensor.AbsoluteSensorRange = AbsoluteSensorRangeValue.Unsigned_0To1;
+    armEncoderConfig.MagnetSensor.AbsoluteSensorDiscontinuityPoint = 1;
     armEncoderConfig.MagnetSensor.SensorDirection = SensorDirectionValue.Clockwise_Positive;
     armEncoderConfig.MagnetSensor.MagnetOffset = ArmConstants.ARM_OFFSET;
 
     CANcoderConfiguration wristEncoderConfig = new CANcoderConfiguration();
-    wristEncoderConfig.MagnetSensor.AbsoluteSensorRange = AbsoluteSensorRangeValue.Unsigned_0To1;
+    wristEncoderConfig.MagnetSensor.AbsoluteSensorDiscontinuityPoint = 1;
     wristEncoderConfig.MagnetSensor.SensorDirection = SensorDirectionValue.CounterClockwise_Positive;
     wristEncoderConfig.MagnetSensor.MagnetOffset = ArmConstants.WRIST_OFFSET;
 

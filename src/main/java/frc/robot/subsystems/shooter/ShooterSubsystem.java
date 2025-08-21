@@ -94,8 +94,8 @@ public class ShooterSubsystem extends SubsystemBase implements Logged {
       m_leftSimState = m_leftShooter.getSimState();
       m_rightSimState = m_rightShooter.getSimState();
 
-      m_leftSim = new FlywheelSim(DCMotor.getFalcon500(1), 1, 0.01);
-      m_rightSim = new FlywheelSim(DCMotor.getFalcon500(1), 1, 0.01);
+//      m_leftSim = new FlywheelSim(DCMotor.getFalcon500(1), 1, 0.1);
+//      m_rightSim = new FlywheelSim(DCMotor.getFalcon500(1), 1, 0.01);
     }
   }
 
