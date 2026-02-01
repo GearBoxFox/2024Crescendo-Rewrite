@@ -7,6 +7,7 @@ import com.ctre.phoenix6.configs.MotorOutputConfigs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.DynamicMotionMagicVoltage;
 import com.ctre.phoenix6.controls.Follower;
+import com.ctre.phoenix6.controls.MotionMagicVoltage;
 import com.ctre.phoenix6.controls.PositionVoltage;
 import com.ctre.phoenix6.hardware.CANcoder;
 import com.ctre.phoenix6.hardware.TalonFX;
@@ -54,7 +55,7 @@ public class ArmSubsystem extends SubsystemBase implements Logged {
 
   // Motor outputs
   private final PositionVoltage m_pid;
-  private final DynamicMotionMagicVoltage m_mm;
+  private final MotionMagicVoltage m_mm;
 
   private final Follower m_armFollowerRequest;
   private final Follower m_wristFollowerRequest;
@@ -109,12 +110,10 @@ public class ArmSubsystem extends SubsystemBase implements Logged {
 
     //set up pid control
     m_pid = new PositionVoltage(0.0)
-        .withEnableFOC(true)
+        .withEnableFOC(false)
         .withSlot(0);
-    m_mm = new DynamicMotionMagicVoltage(0.0,
-            Units.degreesToRotations(360.0),
-            Units.degreesToRotations(360.0 * 0.125), 0.0)
-        .withEnableFOC(true)
+    m_mm = new MotionMagicVoltage(0.0)
+        .withEnableFOC(false)
         .withSlot(0);
 
     m_armFollowerRequest = new Follower(m_armMaster.getDeviceID(), false);
@@ -321,6 +320,9 @@ public class ArmSubsystem extends SubsystemBase implements Logged {
           m_pid.withPosition(Units.degreesToRotations(m_desiredWristPoseDegs))
               .withVelocity(Units.degreesToRotations(m_desiredWristVelocity)));
     }
+
+    m_armFollower.setControl(m_armFollowerRequest);
+    m_wristFollower.setControl(m_wristFollowerRequest);
   }
 
   public boolean atSetpoint() {

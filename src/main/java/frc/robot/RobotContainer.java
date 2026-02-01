@@ -7,11 +7,13 @@ package frc.robot;
 
 import com.ctre.phoenix6.swerve.SwerveModule;
 import com.ctre.phoenix6.swerve.SwerveRequest;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.arm.ArmPose;
+import frc.robot.subsystems.simplearm.SimpleArmSubsystem;
 import frc.robot.subsystems.swerve.CommandSwerveDrivetrain;
 import frc.robot.subsystems.arm.ArmSubsystem;
 import frc.robot.subsystems.swerve.Telemetry;
@@ -25,15 +27,17 @@ import frc.robot.Constants.CameraConstants;
 
 import java.util.Optional;
 
+import static edu.wpi.first.units.Units.MetersPerSecond;
+
 
 public class RobotContainer implements Logged {
-  private double m_maxSpeed = TunerConstants.kSpeedAt12VoltsMps; // kSpeedAt12VoltsMps desired top speed
-  private double m_maxAngularRate = 1.5 * Math.PI; // 3/4 of a rotation per second max angular velocity
+  private double m_maxSpeed = TunerConstants.kSpeedAt12Volts.in(MetersPerSecond) * 0.25; // kSpeedAt12VoltsMps desired top speed
+  private double m_maxAngularRate = 1.5 * Math.PI * 0.5; // 3/4 of a rotation per second max angular velocity
 
   // subsystems
   private final CommandSwerveDrivetrain m_drive = TunerConstants.createDrivetrain();
-//  private final ShooterSubsystem m_shooter = new ShooterSubsystem();
-  private final ArmSubsystem m_arm = new ArmSubsystem();
+  private final ShooterSubsystem m_shooter = new ShooterSubsystem();
+  private final SimpleArmSubsystem m_arm = new SimpleArmSubsystem();
 
   // cameras
 //  private final AprilTagCameraInterface[] m_cameras = new AprilTagCameraInterface[] {
@@ -47,7 +51,7 @@ public class RobotContainer implements Logged {
   // requests for swerve drive
   private final SwerveRequest.FieldCentric m_driveRequest = new SwerveRequest.FieldCentric()
           .withDeadband(m_maxSpeed * 0.1).withRotationalDeadband(m_maxAngularRate * 0.1)
-          .withSteerRequestType(SwerveModule.SteerRequestType.MotionMagicExpo)
+          .withSteerRequestType(SwerveModule.SteerRequestType.Position)
           .withDriveRequestType(SwerveModule.DriveRequestType.OpenLoopVoltage);
 
   Telemetry swerveTelemetry = new Telemetry();
@@ -66,20 +70,35 @@ public class RobotContainer implements Logged {
     m_drive.setDefaultCommand(
         m_drive.applyRequest(() -> m_driveRequest.withVelocityX(-m_driveController.getLeftY() * m_maxSpeed)
                 .withVelocityY(-m_driveController.getLeftX() * m_maxSpeed)
-                .withRotationalRate(-m_driveController.getRightX() * m_maxAngularRate)
+                .withRotationalRate(
+    m_driveController.getRightX() * m_maxAngularRate)
         ).ignoringDisable(true));
 
-    m_arm.setDefaultCommand(m_arm.defaultCommandFactory());
+//    m_arm.setDefaultCommand(m_arm.defaultCommandFactory());
 
-    m_driveController.a().whileTrue(m_drive.applyRequest(SwerveRequest.SwerveDriveBrake::new));
+    m_driveController.x().whileTrue(m_drive.applyRequest(SwerveRequest.SwerveDriveBrake::new));
+    m_driveController.start().onTrue(Commands.runOnce(() -> m_drive.resetRotation(new Rotation2d())));
 
-//        m_driveController.b().whileTrue(
-//            m_shooter.setShooterVelocities(3500, 3500)
-//        );
+        m_driveController.b().whileTrue(
+            m_shooter.setShooterVelocities(3500, 3500)
+        );
+        m_driveController.a().whileTrue(
+            Commands.runEnd(() -> m_shooter.runKicker(true), () -> m_shooter.runKicker(false))
+        );
 
-    m_driveController.a().toggleOnTrue(m_arm.setArmTrajectory(Constants.ArmSetpoints.AMP_TRAJECTORY));
-    m_driveController.x().toggleOnTrue(m_arm.setArmTrajectory(Constants.ArmSetpoints.AMP_TRAJECTORY_NEW));
-    m_driveController.b().onTrue(m_arm.setArmState(ArmSubsystem.ArmState.STOW));
+        m_driveController.a().and(m_driveController.b()).whileTrue(
+            m_shooter.setShooterVelocities(3500, 3500)
+                .alongWith(Commands.runEnd(() -> m_shooter.runKicker(true), () -> m_shooter.runKicker(false)))
+        );
+
+    m_driveController.rightTrigger().whileTrue(
+        m_arm.setArmPositionFactory(Constants.ArmSetpoints.STOW_SETPOINT.armAngle(),
+            Constants.ArmSetpoints.STOW_SETPOINT.wristAngle())
+            .alongWith(m_shooter.intakeCommand(0.75, 0.75, 0.5))
+    ).onFalse(
+        m_arm.setArmPositionFactory(Constants.ArmSetpoints.STOW_SETPOINT.armAngle(), Constants.ArmSetpoints.STOW_SETPOINT.wristAngle())
+    );
+    m_driveController.y().onTrue(m_arm.setArmPositionFactory(Constants.ArmSetpoints.STOW_SETPOINT.armAngle(), Constants.ArmSetpoints.STOW_SETPOINT.wristAngle()));
   }
     
     

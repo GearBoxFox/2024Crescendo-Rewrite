@@ -125,6 +125,7 @@ public class ShooterSubsystem extends SubsystemBase implements Logged {
             m_rightShooter.set(-0.1);
             m_intake.set(intakePower);
             m_kicker.set(kickerPower);
+            m_indexer.set(0.75);
             timer.restart();
           } else if (!timer.hasElapsed(timeout)) {
             // when we have a game piece, run backwards for so long
@@ -134,6 +135,7 @@ public class ShooterSubsystem extends SubsystemBase implements Logged {
             // stop when finished
             m_leftShooter.set(0.0);
             m_rightShooter.set(0.0);
+            m_indexer.set(0.0);
             m_kicker.set(0.0);
             m_intake.set(0.0);
           }
@@ -142,9 +144,14 @@ public class ShooterSubsystem extends SubsystemBase implements Logged {
           // stop when finished
           m_intake.set(0.0);
           m_kicker.set(0.0);
+          m_indexer.set(0.0);
           m_leftShooter.set(0.0);
           m_rightShooter.set(0.0);
         });
+  }
+
+  public Command setKickerMotorFactory(double kickerVoltage) {
+    return runEnd(() -> m_kicker.setVoltage(kickerVoltage), () -> m_kicker.setVoltage(0.0));
   }
 
   public boolean hasGamePiece() {

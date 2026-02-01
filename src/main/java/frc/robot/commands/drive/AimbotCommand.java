@@ -4,6 +4,7 @@ import com.ctre.phoenix6.swerve.SwerveRequest;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.units.LinearVelocityUnit;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.generated.TunerConstants;
@@ -13,9 +14,11 @@ import frc.robot.subsystems.shooter.ShooterSubsystem;
 import lib.utils.AimbotUtils;
 import monologue.Logged;
 
+import static edu.wpi.first.units.Units.MetersPerSecond;
+
 
 public class AimbotCommand extends Command implements Logged {
-  private final double m_maxSpeed = TunerConstants.kSpeedAt12VoltsMps; // kSpeedAt12VoltsMps desired top speed
+  private final double m_maxSpeed = TunerConstants.kSpeedAt12Volts.in(MetersPerSecond); // kSpeedAt12VoltsMps desired top speed
   private final double m_maxAngularRate = 1.5 * Math.PI; // 3/4 of a rotation per second max angular velocity
 
   private final ArmSubsystem m_arm;

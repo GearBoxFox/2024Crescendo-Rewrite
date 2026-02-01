@@ -10,7 +10,7 @@ import frc.robot.subsystems.arm.ArmPose;
 import lib.utils.ArmTrajectory;
 
 public class Constants {
-  public static final String CANBUS_NAME = "canivore";
+  public static final String CANBUS_NAME = "rio";
 
   public static class ArmConstants {
     private ArmConstants() {}
@@ -25,8 +25,8 @@ public class Constants {
     /* Because the absolute encoders are on a 2/1 ratio, we have to move our offset down a little into a rotation lower
      * than the lowest point the arm and wrist will move to , and then compensate for that in our encoder reset code */
     public static final double OFFSET_NUDGE = 45;
-    public static final double ARM_OFFSET = -0.318115 + Units.degreesToRotations(OFFSET_NUDGE);
-    public static final double WRIST_OFFSET = 0.000000 + Units.degreesToRotations(OFFSET_NUDGE);
+    public static final double ARM_OFFSET = -0.318115 + Units.degreesToRotations(OFFSET_NUDGE) - Units.degreesToRotations(7.0);
+    public static final double WRIST_OFFSET = 0.000000 + Units.degreesToRotations(OFFSET_NUDGE) + Units.degreesToRotations(5);
     public static final double ARM_SENSOR_MECHANISM_RATIO =
         (56.0 / 12.0) * (66.0 / 18.0) * (80.0 / 18.0) * (64.0 / 24.0);
     public static final double ARM_CANCODER_MECHANISM_RATIO = (26.0 / 36.0) * (64.0 / 24.0);
@@ -36,14 +36,14 @@ public class Constants {
         (56.0 / 12.0) * (66.0 / 18.0) * (80.0 / 18.0) * (48.0 / 24.0);
     public static final double WRIST_CANCODER_MECHANISM_RATIO = (48.0 / 24.0);
 
-    public static final double WRIST_KP = 350.0;
+    public static final double WRIST_KP = 200.0;
     public static final double WRIST_KI = 6.0;
     public static final double WRIST_KD = 3.0;
     public static final double WRIST_KS = 0.375;
     public static final double WRIST_KV = 0.0;
     public static final double WRIST_KG = 0.35;
 
-    public static final double ARM_KP = 350.0;
+    public static final double ARM_KP = 200.0;
     public static final double ARM_KI = 6.0;
     public static final double ARM_KD = 3.0;
     public static final double ARM_KS = 0.375;
@@ -142,7 +142,7 @@ public class Constants {
     public static final double SHOOTER_KD = 0.00675;
     public static final double SHOOTER_KF = 0.000172;
     public static final double SHOOTER_KS = 0.21963;
-    public static final double SHOOTER_KV = 0.174541;
+    public static final double SHOOTER_KV = 0.0; //0.174541;
 
     public static final boolean TOP_LEFT_INVERTED = false;
     public static final boolean TOP_RIGHT_INVERTED = true;
